@@ -1,15 +1,27 @@
 {
-  "name": "elysia-clean",
-  "version": "1.0.50",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
-  },
-  "dependencies": {
-    "elysia": "latest"
-  },
-  "devDependencies": {
-    "bun-types": "latest"
-  },
-  "module": "src/index.js"
+	"name": "elysia-clean",
+	"author": {
+		"name": "Fexend"
+	},
+	"version": "1.0.0",
+	"scripts": {
+		"lint": "bun run eslint . --ext .ts,.js",
+		"format": "bun run prettier --write ."
+	},
+	"dependencies": {
+		"elysia": "latest"
+	},
+	"devDependencies": {
+		"bun-types": "latest",
+		"eslint": "^9.33.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
+		"typescript-eslint": "^8.39.1",
+		"@types/bun": "latest"
+	},
+	"type": "module",
+	"private": true,
+	"peerDependencies": {
+		"typescript": "^5"
+	}
 }
