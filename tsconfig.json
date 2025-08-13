@@ -32,32 +32,18 @@
 		"baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
 		"paths": {
 			"@app/*": ["apps/*"],
-			"@api/*": ["apps/apis/*"],
-			"@worker/*": ["app/worker/*"],
+			"@apis/*": ["apps/apis/*"],
+			"@worker/*": ["apps/worker/*"],
 
 			"@packages/*": ["packages"],
+			"@packages": ["packages/index.ts"],
+
+			"@packages_config/*": ["packages/config"],
+			"@packages_config": ["packages/config/index.ts"],
+
 			"@packages_db/*": ["packages/db"],
 			"@packages_cache/*": ["packages/cache"],
 			"@packages_event/*": ["packages/event"]
-
-			// "@app/*": ["src/app/*"],
-			// "@config/*": ["src/config/*"],
-			// "@config": ["src/config/index.ts"],
-			// "@mails/*": ["src/app/mails/*"],
-			// "@mails": ["src/app/mails/index.ts"],
-			// "@errors/*": ["src/app/errors/*"],
-			// "@errors": ["src/app/errors/index.ts"],
-			// "@utils/*": ["src/utils/*"],
-			// "@utils": ["src/utils/index.ts"],
-			// "@appTypes/*": ["src/types/*"],
-			// "@controllers/*": ["src/app/controllers/*"],
-			// "@controllers": ["src/app/controllers/index.ts"],
-			// "@repositories/*": ["src/app/repositories/*"],
-			// "@repositories": ["src/app/repositories/index.ts"],
-			// "@routes/*": ["src/routes/*"],
-			// "@routes": ["src/routes/index.ts"],
-			// "@seeders/*": ["prisma/seeders/*"],
-			// "@seeders": ["prisma/seeders/index.ts"]
 		},
 		/* Specify a set of entries that re-map imports to additional lookup locations. */ // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
 		// "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

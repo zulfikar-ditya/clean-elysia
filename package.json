@@ -5,10 +5,15 @@
 	},
 	"version": "1.0.0",
 	"scripts": {
+		"start:api": "bun run apps/apis/serve.ts",
+		"dev:api": "bun run --hot --watch apps/apis/serve.ts",
+		"build:api": "bun build apps/apis/serve.ts --outdir=dist --target=node",
 		"lint": "bun run eslint . --ext .ts,.js",
 		"format": "bun run prettier --write ."
 	},
 	"dependencies": {
+		"@elysiajs/cors": "^1.3.3",
+		"@elysiajs/jwt": "^1.3.2",
 		"elysia": "latest"
 	},
 	"devDependencies": {
