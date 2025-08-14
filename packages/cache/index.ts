@@ -22,7 +22,7 @@ class Cache {
 		try {
 			const client = this.getRedisClient();
 			const value = await client.get(key);
-			return value ? JSON.parse(value) : null;
+			return value ? (JSON.parse(value) as T) : null;
 		} catch (error) {
 			log.error(error, `Error getting cache for key ${key}:`);
 			return null;

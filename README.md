@@ -2,9 +2,10 @@
 
 ## Todo
 
-- [ ] Auth (login, register)
+- [ ] Auth (login, register, middleware, etc)
+- [ ] Mailer
 - [x] Database
-- [ ] Seeder
+- [x] Seeder
 - [x] Toolkit, Plugin, Logger, Default
 - [x] Packages + Helper
 - [x] Redis Cache

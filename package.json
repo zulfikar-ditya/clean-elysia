@@ -9,7 +9,8 @@
 		"dev:api": "bun run --hot --watch apps/apis/serve.ts",
 		"build:api": "bun build apps/apis/serve.ts --outdir=dist --target=node",
 		"lint": "bun run eslint . --ext .ts,.js",
-		"format": "bun run prettier --write ."
+		"format": "bun run prettier --write .",
+		"seed": "bun run ./infra/seed/index.ts"
 	},
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",

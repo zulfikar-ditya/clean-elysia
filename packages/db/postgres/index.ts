@@ -1,6 +1,7 @@
 // Drizle
 export * from "./email_verification";
 export * from "./password_reset_token";
+export * from "./rbac";
 export * from "./user";
 
 import { DatabaseConfig } from "@packages_config/*";
