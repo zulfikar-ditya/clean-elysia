@@ -1,16 +1,9 @@
-// import { AppController, AuthController } from "@app/controllers";
-// import { authMiddleware } from "@app/middlewares";
 import Elysia from "elysia";
+import { HomeHandler } from "@apis/handlers/home.handler";
 
 const routes = new Elysia();
 
-routes.get("/", () => {
-	return {
-		status: 200,
-		success: true,
-		message: "Welcome to the ElysiaJS API",
-		data: null,
-	};
-});
+routes.get("/", HomeHandler.home);
+routes.get("/health", HomeHandler.health);
 
 export default routes;

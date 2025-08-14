@@ -6,6 +6,9 @@ interface IAppConfig {
 	APP_TIMEZONE: string;
 	APP_KEY: string;
 	APP_JWT_SECRET: string;
+
+	// log
+	LOG_LEVEL: "info" | "warn" | "debug";
 }
 
 export const AppConfig: IAppConfig = {
@@ -19,4 +22,6 @@ export const AppConfig: IAppConfig = {
 	APP_TIMEZONE: process.env.APP_TIMEZONE || "UTC",
 	APP_KEY: process.env.APP_KEY || "your-app-key",
 	APP_JWT_SECRET: process.env.APP_JWT_SECRET || "jwt-secret",
+
+	LOG_LEVEL: (process.env.LOG_LEVEL || "info") as "info" | "warn" | "debug",
 };

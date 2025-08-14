@@ -43,7 +43,19 @@
 
 			"@packages_db/*": ["packages/db"],
 			"@packages_cache/*": ["packages/cache"],
-			"@packages_event/*": ["packages/event"]
+			"@packages_event/*": ["packages/event"],
+
+			"@postgres/*": ["packages/db/postgres/*"],
+			"@postgres": ["packages/db/postgres/index.ts"],
+
+			"@toolkit/*": ["packages/toolkit/*"],
+			"@toolkit": ["packages/toolkit/index.ts"],
+
+			"@security/*": ["packages/security/*"],
+			"@security": ["packages/security/index.ts"],
+
+			"@default/*": ["packages/default/*"],
+			"@default": ["packages/default/index.ts"]
 		},
 		/* Specify a set of entries that re-map imports to additional lookup locations. */ // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
 		// "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
@@ -114,6 +126,11 @@
 		// "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */
 	},
-	"include": ["apps/**/*", "infra/**/*", "packages/**/*"],
+	"include": [
+		"apps/**/*",
+		"infra/**/*",
+		"packages/**/*",
+		"./drizzle.config.ts"
+	],
 	"exclude": ["node_modules", "dist"]
 }

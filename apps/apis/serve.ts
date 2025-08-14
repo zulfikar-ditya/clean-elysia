@@ -1,13 +1,19 @@
 import cors from "@elysiajs/cors";
 import jwt from "@elysiajs/jwt";
-import { AppConfig, CORSConfig } from "@packages";
+import { AppConfig, CORSConfig, log, LoggerPlugin } from "@packages";
 
 import { Elysia } from "elysia";
 import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import routes from "@apis/routes/app.routes";
 
 const app = new Elysia()
-	.onError(({ code, error, set }) => {
+	.derive(() => ({
+		requestId:
+			globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+		startedAt: Date.now(),
+	}))
+	.use(LoggerPlugin)
+	.onError(({ code, error, set, log: ctxLog }) => {
 		switch (code) {
 			case "NOT_FOUND":
 				return {
@@ -17,6 +23,7 @@ const app = new Elysia()
 					data: null,
 				};
 			case "INTERNAL_SERVER_ERROR":
+				ctxLog?.error({ code, err: error }, "internal server error");
 				return {
 					status: 500,
 					success: false,
@@ -24,6 +31,7 @@ const app = new Elysia()
 					data: null,
 				};
 			case "UNKNOWN":
+				ctxLog?.error({ code, err: error }, "unhandled error");
 				return {
 					status: 500,
 					success: false,
@@ -41,12 +49,11 @@ const app = new Elysia()
 					};
 				}
 
+				ctxLog?.error({ code, err: error }, "error occurred");
+
 				return error;
 		}
 	})
-	// .onAfterResponse(({ set, path, request }) => {
-	// 	// TODO Logger
-	// })
 	.use(
 		jwt({
 			alg: "HS256",
@@ -60,3 +67,6 @@ const app = new Elysia()
 app.use(routes);
 
 export default app.fetch;
+
+// console.log(`Server started in ${AppConfig.APP_URL}`);
+log.info({}, `application running on port ${AppConfig.APP_PORT}`);
