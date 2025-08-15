@@ -7,12 +7,14 @@ export const UserSeeder = async () => {
 		await tx.insert(usersTable).values({
 			name: "superuser",
 			email: "superuser@example.com",
+			email_verified_at: new Date(),
 			password: await Hash.generateHash("password"),
 		});
 
 		await tx.insert(usersTable).values({
 			name: "admin",
 			email: "admin@example.com",
+			email_verified_at: new Date(),
 			password: await Hash.generateHash("password"),
 		});
 

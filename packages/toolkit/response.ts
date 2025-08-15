@@ -53,7 +53,7 @@ export class ResponseToolkit {
 
 	static validationError(
 		ctx: Context,
-		errors: { [key: string]: string[] },
+		errors: { [key: string]: string }[],
 		message: string = "Validation failed",
 		statusCode: number = 422,
 	) {

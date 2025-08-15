@@ -212,8 +212,11 @@ export class DateToolkit {
 
 	static getDateTimeInformativeWithTimezone(
 		date: dayjs.Dayjs,
-		tz: string,
+		tz?: string,
 	): string {
+		if (!tz) {
+			tz = DateToolkit.getConfiguredTimezone();
+		}
 		return date.tz(tz).format("dddd, MMMM D, YYYY HH:mm z");
 	}
 

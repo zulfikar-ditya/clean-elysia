@@ -5,6 +5,7 @@ import { AppConfig, CORSConfig, log, LoggerPlugin } from "@packages";
 import { Elysia } from "elysia";
 import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import routes from "@apis/routes/app.routes";
+import { errors } from "@vinejs/vine";
 
 const app = new Elysia()
 	.derive(() => ({
@@ -13,7 +14,31 @@ const app = new Elysia()
 		startedAt: Date.now(),
 	}))
 	.use(LoggerPlugin)
+	.use(
+		jwt({
+			alg: "HS256",
+			secret: AppConfig.APP_JWT_SECRET,
+		}),
+	)
+	.use(cors(CORSConfig))
+	.use(routes)
 	.onError(({ code, error, set, log: ctxLog }) => {
+		if (error instanceof errors.E_VALIDATION_ERROR) {
+			const errors = (
+				error.messages as { field: string; message: string }[]
+			).map((msg: { field: string; message: string }) => ({
+				field: msg.field,
+				message: msg.message,
+			}));
+
+			return {
+				status: 422,
+				success: false,
+				message: errors[0]?.message || "Validation error",
+				errors: errors,
+			};
+		}
+
 		switch (code) {
 			case "NOT_FOUND":
 				return {
@@ -38,6 +63,13 @@ const app = new Elysia()
 					message: "An unknown error occurred",
 					data: null,
 				};
+			case "VALIDATION":
+				return {
+					status: 422,
+					success: false,
+					message: "An unknown error occurred",
+					data: null,
+				};
 			default:
 				if (error instanceof UnauthorizedError) {
 					set.status = 401;
@@ -54,17 +86,7 @@ const app = new Elysia()
 				return error;
 		}
 	})
-	.use(
-		jwt({
-			alg: "HS256",
-			secret: AppConfig.APP_JWT_SECRET,
-		}),
-	)
-	.use(cors(CORSConfig))
 	.listen(AppConfig.APP_PORT);
-
-// routes
-app.use(routes);
 
 export default app.fetch;
 

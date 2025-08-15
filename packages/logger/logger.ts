@@ -15,7 +15,7 @@ const logFile = destination({
 const transport = {
 	target: "pino-pretty",
 	options: {
-		singleLine: true,
+		singleLine: false,
 		translateTime: "SYS:standard",
 		include: "time",
 	},
