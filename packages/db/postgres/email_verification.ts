@@ -9,6 +9,7 @@ export const emailVerificationTable = pgTable(
 			.notNull()
 			.references(() => usersTable.id),
 		token: varchar({ length: 255 }).notNull(),
+		expired_at: timestamp().notNull(),
 		created_at: timestamp().defaultNow(),
 		updated_at: timestamp()
 			.defaultNow()

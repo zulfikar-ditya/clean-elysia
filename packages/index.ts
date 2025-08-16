@@ -1,5 +1,6 @@
 // Other
 export * from "./logger/logger";
+export * from "./mail/mail.service";
 
 // config -------------------------
 export * from "./config/index";

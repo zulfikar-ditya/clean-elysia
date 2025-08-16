@@ -41,9 +41,38 @@ const options: LoggerOptions = {
 			return { level: label };
 		},
 		log(obj) {
-			return {
-				...obj,
-			};
+			// Create a copy to avoid mutating the original object
+			const sanitized = { ...obj };
+
+			// Remove sensitive fields
+			delete sanitized.password;
+			delete sanitized.token;
+			delete sanitized.authorization;
+			delete sanitized.bearer;
+			// delete sanitized.user;
+			// delete sanitized.req;
+			// delete sanitized.res;
+
+			// Remove any field containing 'password', 'token', or 'auth' (case insensitive)
+			Object.keys(sanitized).forEach((key) => {
+				if (/password|token|auth|secret|key|credential/i.test(key)) {
+					delete sanitized[key];
+				}
+			});
+
+			// Remove sensitive data from nested objects (like request body)
+			if (sanitized.body && typeof sanitized.body === "object") {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const sanitizedBody = { ...sanitized.body } as Record<string, any>;
+				Object.keys(sanitizedBody).forEach((key) => {
+					if (/password|token|auth|secret|key|credential/i.test(key)) {
+						delete sanitizedBody[key];
+					}
+				});
+				sanitized.body = sanitizedBody;
+			}
+
+			return sanitized;
 		},
 	},
 

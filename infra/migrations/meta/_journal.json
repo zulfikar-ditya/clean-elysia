@@ -15,6 +15,13 @@
 			"when": 1755165489298,
 			"tag": "0001_previous_hammerhead",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1755313460806,
+			"tag": "0002_black_pet_avengers",
+			"breakpoints": true
 		}
 	]
 }

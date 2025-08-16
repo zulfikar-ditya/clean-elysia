@@ -2,11 +2,11 @@ import { db, usersTable } from "@postgres/index";
 import { UserInformation } from "@apis/types/UserInformation";
 import { eq } from "drizzle-orm";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const UserRepository = () => {
 	const dbInstance = db;
 
 	return {
+		db: dbInstance,
 		UserInformation: async (userId: string): Promise<UserInformation> => {
 			const user = await dbInstance
 				.select({

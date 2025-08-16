@@ -9,6 +9,9 @@ interface IAppConfig {
 
 	// log
 	LOG_LEVEL: "info" | "warn" | "debug";
+
+	// client
+	CLIENT_URL: string;
 }
 
 export const AppConfig: IAppConfig = {
@@ -24,4 +27,6 @@ export const AppConfig: IAppConfig = {
 	APP_JWT_SECRET: process.env.APP_JWT_SECRET || "jwt-secret",
 
 	LOG_LEVEL: (process.env.LOG_LEVEL || "info") as "info" | "warn" | "debug",
+
+	CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000",
 };

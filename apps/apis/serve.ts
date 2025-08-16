@@ -16,6 +16,7 @@ const app = new Elysia()
 	.use(LoggerPlugin)
 	.use(
 		jwt({
+			name: "jwt",
 			alg: "HS256",
 			secret: AppConfig.APP_JWT_SECRET,
 		}),
@@ -24,7 +25,7 @@ const app = new Elysia()
 	.use(routes)
 	.onError(({ code, error, set, log: ctxLog }) => {
 		if (error instanceof errors.E_VALIDATION_ERROR) {
-			const errors = (
+			const errorMessages = (
 				error.messages as { field: string; message: string }[]
 			).map((msg: { field: string; message: string }) => ({
 				field: msg.field,
@@ -34,8 +35,8 @@ const app = new Elysia()
 			return {
 				status: 422,
 				success: false,
-				message: errors[0]?.message || "Validation error",
-				errors: errors,
+				message: errorMessages[0]?.message || "Validation error",
+				errors: errorMessages,
 			};
 		}
 

@@ -7,9 +7,8 @@ import { UserInformation } from "../types/UserInformation";
 export const authMiddleware = async (ctx: AppContext) => {
 	try {
 		const token = getTokenFromHeader(ctx);
-		const payload: {
-			id: string;
-		} | null = await ctx.jwt.verify(token);
+		// eslint-disable-next-line
+		const payload: { id: string } | null = await ctx.jwt.verify(token);
 
 		if (!payload) {
 			throw new UnauthorizedError();
@@ -18,7 +17,6 @@ export const authMiddleware = async (ctx: AppContext) => {
 		const cacheKey = `user:${payload.id}`;
 		const cachedUser = await Cache.get<UserInformation | null>(cacheKey);
 		if (cachedUser) {
-      console.log("Cache hit");
 			ctx.user = cachedUser;
 			return;
 		}

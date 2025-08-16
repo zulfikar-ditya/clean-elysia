@@ -9,7 +9,7 @@ interface ICorsConfig {
 
 export const CORSConfig: ICorsConfig = {
 	origin: process.env.ALLOWED_HOST ? process.env.ALLOWED_HOST.split(",") : "*",
-	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	methods: ["GET", "POST", "PATCH", "DELETE"],
 	allowedHeaders: ["Content-Type", "Authorization"],
 	credentials: false,
 	maxAge: 86400,

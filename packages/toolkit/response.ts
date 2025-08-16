@@ -7,7 +7,7 @@ export class ResponseToolkit {
 		message: string = "Success",
 		statusCode: number,
 	) {
-		ctx.status(statusCode);
+		ctx.set.status = statusCode;
 
 		return {
 			status: statusCode,
@@ -17,7 +17,8 @@ export class ResponseToolkit {
 		};
 	}
 
-	static error(message: string, statusCode: number = 400) {
+	static error(ctx: Context, message: string, statusCode: number = 400) {
+		ctx.set.status = statusCode;
 		return {
 			status: statusCode,
 			success: false,
@@ -26,12 +27,12 @@ export class ResponseToolkit {
 		};
 	}
 
-	static notFound(message: string = "Resource not found") {
-		return this.error(message, 404);
+	static notFound(ctx: Context, message: string = "Resource not found") {
+		return this.error(ctx, message, 404);
 	}
 
-	static unauthorized(message: string = "Unauthorized") {
-		return this.error(message, 401);
+	static unauthorized(ctx: Context, message: string = "Unauthorized") {
+		return this.error(ctx, message, 401);
 	}
 
 	static response<T>(
@@ -41,7 +42,7 @@ export class ResponseToolkit {
 		message: string = "Success",
 		statusCode: number = 200,
 	) {
-		ctx.status(statusCode);
+		ctx.set.status = statusCode;
 
 		return {
 			status: statusCode,

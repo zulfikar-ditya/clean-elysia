@@ -2,8 +2,8 @@
 
 ## Todo
 
-- [ ] Auth (login, register, middleware, etc)
-- [ ] Mailer
+- [x] Auth (login, register, middleware, etc)
+- [x] Mailer
 - [x] Database
 - [x] Seeder
 - [x] Toolkit, Plugin, Logger, Default
