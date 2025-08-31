@@ -23,7 +23,7 @@ const app = new Elysia()
 	)
 	.use(cors(CORSConfig))
 	.use(routes)
-	.onError(({ code, error, set, log: ctxLog }) => {
+	.onError(({ code, error, log: ctxLog }) => {
 		if (error instanceof errors.E_VALIDATION_ERROR) {
 			const errorMessages = (
 				error.messages as { field: string; message: string }[]
@@ -39,6 +39,8 @@ const app = new Elysia()
 				errors: errorMessages,
 			};
 		}
+
+		console.error("Error occurred:", error);
 
 		switch (code) {
 			case "NOT_FOUND":
@@ -57,7 +59,10 @@ const app = new Elysia()
 					data: null,
 				};
 			case "UNKNOWN":
-				ctxLog?.error({ code, err: error }, "unhandled error");
+				ctxLog?.error(
+					{ code, err: error, cause: error.cause },
+					"unhandled error",
+				);
 				return {
 					status: 500,
 					success: false,
@@ -73,7 +78,6 @@ const app = new Elysia()
 				};
 			default:
 				if (error instanceof UnauthorizedError) {
-					set.status = 401;
 					return {
 						status: 401,
 						success: false,

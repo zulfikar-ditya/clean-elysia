@@ -53,9 +53,9 @@ const options: LoggerOptions = {
 			// delete sanitized.req;
 			// delete sanitized.res;
 
-			// Remove any field containing 'password', 'token', or 'auth' (case insensitive)
+			// Remove any field containing 'password', 'token', 'auth', 'bearer' (case insensitive)
 			Object.keys(sanitized).forEach((key) => {
-				if (/password|token|auth|secret|key|credential/i.test(key)) {
+				if (/password|token|auth|bearer|secret|key|credential/i.test(key)) {
 					delete sanitized[key];
 				}
 			});
@@ -65,7 +65,7 @@ const options: LoggerOptions = {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const sanitizedBody = { ...sanitized.body } as Record<string, any>;
 				Object.keys(sanitizedBody).forEach((key) => {
-					if (/password|token|auth|secret|key|credential/i.test(key)) {
+					if (/password|token|auth|bearer|secret|key|credential/i.test(key)) {
 						delete sanitizedBody[key];
 					}
 				});

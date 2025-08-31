@@ -1,5 +1,6 @@
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { usersTable } from "./user";
+import { relations } from "drizzle-orm";
 
 export const passwordResetPasswordTable = pgTable(
 	"password_reset_tokens",
@@ -15,4 +16,14 @@ export const passwordResetPasswordTable = pgTable(
 			.$onUpdate(() => new Date()),
 	},
 	(table) => [index("password_reset_token_token_index").on(table.token)],
+);
+
+export const passwordResetTokenRelations = relations(
+	passwordResetPasswordTable,
+	({ one }) => ({
+		user: one(usersTable, {
+			fields: [passwordResetPasswordTable.user_id],
+			references: [usersTable.id],
+		}),
+	}),
 );

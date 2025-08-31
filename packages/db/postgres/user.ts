@@ -1,4 +1,8 @@
+import { relations } from "drizzle-orm";
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { emailVerificationTable } from "./email_verification";
+import { passwordResetPasswordTable } from "./password_reset_token";
+import { userRolesTable } from "./rbac";
 
 export const usersTable = pgTable(
 	"users",
@@ -15,3 +19,9 @@ export const usersTable = pgTable(
 	},
 	(table) => [index("users_email_index").on(table.email)],
 );
+
+export const usersRelations = relations(usersTable, ({ many }) => ({
+	email_verifications: many(emailVerificationTable),
+	password_reset_tokens: many(passwordResetPasswordTable),
+	roles: many(userRolesTable),
+}));
