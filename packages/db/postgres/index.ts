@@ -1,4 +1,4 @@
-// Drizle
+// Drizzle
 export * from "./email_verification";
 export * from "./password_reset_token";
 export * from "./rbac";
@@ -22,24 +22,24 @@ import {
 	permissionTable,
 	rolePermissionTable,
 	userRolesTable,
-} from "./rbac";
-import { usersTable, usersRelations } from "./user";
-import {
 	roleRelations,
 	permissionRelations,
 	rolePermissionRelations,
 	userRolesRelations,
 } from "./rbac";
+import { usersTable, usersRelations } from "./user";
 
 const schema = {
-	email_verifications: emailVerificationTable,
-	password_reset_tokens: passwordResetPasswordTable,
+	// Tables
+	users: usersTable,
 	roles: roleTable,
 	permissions: permissionTable,
 	role_permissions: rolePermissionTable,
 	user_roles: userRolesTable,
-	users: usersTable,
+	email_verifications: emailVerificationTable,
+	password_reset_tokens: passwordResetPasswordTable,
 
+	// Relations
 	usersRelations,
 	roleRelations,
 	permissionRelations,
@@ -63,6 +63,7 @@ export {
 	userRolesTable,
 	emailVerificationTable,
 	passwordResetPasswordTable,
-
-	//
 };
+
+// Export type for the database instance
+export type Database = typeof db;

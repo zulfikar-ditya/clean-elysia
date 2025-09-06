@@ -140,7 +140,11 @@ export const RoleHandler = {
 		const role = await db.query.roles.findFirst({
 			where: eq(roleTable.id, roleId),
 			with: {
-				permissions: true,
+				role_permissions: {
+					with: {
+						permission: true,
+					},
+				},
 			},
 			columns: {
 				id: true,

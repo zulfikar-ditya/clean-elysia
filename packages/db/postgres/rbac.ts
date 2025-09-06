@@ -16,10 +16,8 @@ export const roleTable = pgTable("roles", {
 });
 
 export const roleRelations = relations(roleTable, ({ many }) => ({
-	permissions: many(rolePermissionTable, {
-		relationName: "permissions",
-	}),
-	users: many(userRolesTable),
+	role_permissions: many(rolePermissionTable),
+	user_roles: many(userRolesTable),
 }));
 
 export const permissionTable = pgTable("permissions", {
@@ -31,7 +29,7 @@ export const permissionTable = pgTable("permissions", {
 });
 
 export const permissionRelations = relations(permissionTable, ({ many }) => ({
-	roles: many(rolePermissionTable),
+	role_permissions: many(rolePermissionTable),
 }));
 
 export const rolePermissionTable = pgTable(
@@ -39,10 +37,10 @@ export const rolePermissionTable = pgTable(
 	{
 		roleId: uuid("role_id")
 			.notNull()
-			.references(() => roleTable.id),
+			.references(() => roleTable.id, { onDelete: "cascade" }),
 		permissionId: uuid("permission_id")
 			.notNull()
-			.references(() => permissionTable.id),
+			.references(() => permissionTable.id, { onDelete: "cascade" }),
 	},
 	(table) => ({
 		pk: primaryKey({ columns: [table.roleId, table.permissionId] }),
@@ -66,10 +64,12 @@ export const rolePermissionRelations = relations(
 export const userRolesTable = pgTable(
 	"user_roles",
 	{
-		userId: uuid("user_id").notNull(),
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => usersTable.id, { onDelete: "cascade" }),
 		roleId: uuid("role_id")
 			.notNull()
-			.references(() => roleTable.id),
+			.references(() => roleTable.id, { onDelete: "cascade" }),
 		assignedAt: timestamp("assigned_at").defaultNow().notNull(),
 	},
 	(table) => ({
@@ -77,9 +77,15 @@ export const userRolesTable = pgTable(
 	}),
 );
 
-export const userRolesRelations = relations(userRolesTable, ({ many }) => ({
-	users: many(usersTable),
-	roles: many(roleTable),
+export const userRolesRelations = relations(userRolesTable, ({ one }) => ({
+	user: one(usersTable, {
+		fields: [userRolesTable.userId],
+		references: [usersTable.id],
+	}),
+	role: one(roleTable, {
+		fields: [userRolesTable.roleId],
+		references: [roleTable.id],
+	}),
 }));
 
 export type Role = typeof roleTable.$inferSelect;

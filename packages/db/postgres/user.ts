@@ -23,5 +23,5 @@ export const usersTable = pgTable(
 export const usersRelations = relations(usersTable, ({ many }) => ({
 	email_verifications: many(emailVerificationTable),
 	password_reset_tokens: many(passwordResetPasswordTable),
-	roles: many(userRolesTable),
+	user_roles: many(userRolesTable),
 }));
