@@ -9,7 +9,6 @@ export const authMiddleware = async (ctx: AppContext) => {
 		const token = getTokenFromHeader(ctx);
 		// eslint-disable-next-line
 		const payload: { id: string } | null = await ctx.jwt.verify(token);
-
 		if (!payload) {
 			throw new UnauthorizedError();
 		}

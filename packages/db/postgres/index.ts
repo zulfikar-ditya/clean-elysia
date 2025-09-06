@@ -64,6 +64,3 @@ export {
 	emailVerificationTable,
 	passwordResetPasswordTable,
 };
-
-// Export type for the database instance
-export type Database = typeof db;

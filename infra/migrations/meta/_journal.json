@@ -29,6 +29,20 @@
       "when": 1757128557403,
       "tag": "0003_cool_pride",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1757133127681,
+      "tag": "0004_parched_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1757133970751,
+      "tag": "0005_aromatic_dragon_man",
+      "breakpoints": true
     }
   ]
 }

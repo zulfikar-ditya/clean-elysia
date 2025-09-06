@@ -7,6 +7,7 @@ import { AppContext } from "../types/elysia";
 import { PermissionHandler } from "@apis/handlers/settings/permission.handler";
 import { RoleHandler } from "../handlers/settings/role.handler";
 import { SettingSelectHandler } from "../handlers/settings/select-options/select.handler";
+import { UserHandler } from "../handlers/settings/user.handler";
 
 const routes = new Elysia();
 
@@ -45,6 +46,12 @@ routes.group("", (app) => {
 		app.get("/role/:id", RoleHandler.detail);
 		app.patch("/role/:id", RoleHandler.update);
 		app.delete("/role/:id", RoleHandler.delete);
+
+		app.get("/user", UserHandler.list);
+		app.post("/user", UserHandler.create);
+		app.get("/user/:id", UserHandler.detail);
+		app.patch("/user/:id", UserHandler.update);
+		app.delete("/user/:id", UserHandler.delete);
 
 		app.get("/select/permission", SettingSelectHandler.permissions);
 		app.get("/select/role", SettingSelectHandler.roles);
