@@ -8,6 +8,7 @@ import { PermissionHandler } from "@apis/handlers/settings/permission.handler";
 import { RoleHandler } from "../handlers/settings/role.handler";
 import { SettingSelectHandler } from "../handlers/settings/select-options/select.handler";
 import { UserHandler } from "../handlers/settings/user.handler";
+import { roleMiddleware } from "../middleware/role.middleware";
 
 const routes = new Elysia();
 
@@ -35,6 +36,11 @@ routes.group("", (app) => {
 	app.patch("/profile/password", ProfileHandler.updatePassword);
 
 	app.group("/settings", (app) => {
+		app.derive(async (ctx) => {
+			await roleMiddleware(ctx as AppContext, []);
+			return {};
+		});
+
 		app.get("/permission", PermissionHandler.list);
 		app.post("/permission", PermissionHandler.create);
 		app.get("/permission/:id", PermissionHandler.detail);

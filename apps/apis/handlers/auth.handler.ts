@@ -132,11 +132,7 @@ export const AuthHandler = {
 			}>(
 				ctx,
 				{
-					user_information: {
-						id: user[0].id,
-						email: user[0].email,
-						name: user[0].name,
-					},
+					user_information: userInformation,
 					access_token: JwtToken,
 				},
 				"Login successful",

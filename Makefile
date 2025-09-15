@@ -20,13 +20,13 @@ help:
 	@echo "    db-drop     - Drop all tables (dangerous!)"
 
 # Development commands
-dev:
+dev-api:
 	bun run dev:api
 
-build:
+build-api:
 	bun run build:api
 
-start:
+start-api:
 	bun run start:api
 
 lint:
@@ -35,7 +35,7 @@ lint:
 format:
 	bun run format
 
-seed:
+db-seed:
 	bun run seed
 
 # Database commands

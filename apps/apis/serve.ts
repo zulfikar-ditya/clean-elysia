@@ -6,6 +6,7 @@ import { Elysia } from "elysia";
 import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import routes from "@apis/routes/app.routes";
 import { errors } from "@vinejs/vine";
+import { ForbiddenError } from "./errors";
 
 const app = new Elysia()
 	.derive(() => ({
@@ -23,8 +24,10 @@ const app = new Elysia()
 	)
 	.use(cors(CORSConfig))
 	.use(routes)
-	.onError(({ code, error, log: ctxLog }) => {
+	.onError(({ code, error, log: ctxLog, set }) => {
+		// Use set.status to set the response status code
 		if (error instanceof errors.E_VALIDATION_ERROR) {
+			set.status = 422;
 			const errorMessages = (
 				error.messages as { field: string; message: string }[]
 			).map((msg: { field: string; message: string }) => ({
@@ -40,10 +43,31 @@ const app = new Elysia()
 			};
 		}
 
+		if (error instanceof UnauthorizedError) {
+			set.status = 401;
+			return {
+				status: 401,
+				success: false,
+				message: error.message,
+				data: null,
+			};
+		}
+
+		if (error instanceof ForbiddenError) {
+			set.status = 403;
+			return {
+				status: 403,
+				success: false,
+				message: error.message,
+				data: null,
+			};
+		}
+
 		console.error("Error occurred:", error);
 
 		switch (code) {
 			case "NOT_FOUND":
+				set.status = 404;
 				return {
 					status: 404,
 					success: false,
@@ -51,6 +75,7 @@ const app = new Elysia()
 					data: null,
 				};
 			case "INTERNAL_SERVER_ERROR":
+				set.status = 500;
 				ctxLog?.error({ code, err: error }, "internal server error");
 				return {
 					status: 500,
@@ -59,10 +84,11 @@ const app = new Elysia()
 					data: null,
 				};
 			case "UNKNOWN":
-				ctxLog?.error(
-					{ code, err: error, cause: error.cause },
-					"unhandled error",
-				);
+				((set.status = 500),
+					ctxLog?.error(
+						{ code, err: error, cause: error.cause },
+						"unhandled error",
+					));
 				return {
 					status: 500,
 					success: false,
@@ -70,6 +96,7 @@ const app = new Elysia()
 					data: null,
 				};
 			case "VALIDATION":
+				set.status = 422;
 				return {
 					status: 422,
 					success: false,
@@ -77,15 +104,6 @@ const app = new Elysia()
 					data: null,
 				};
 			default:
-				if (error instanceof UnauthorizedError) {
-					return {
-						status: 401,
-						success: false,
-						message: error.message,
-						data: null,
-					};
-				}
-
 				ctxLog?.error({ code, err: error }, "error occurred");
 
 				return error;
