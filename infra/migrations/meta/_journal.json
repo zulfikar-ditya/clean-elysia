@@ -1,27 +1,48 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1755164868610,
-			"tag": "0000_useful_vargas",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1755165489298,
-			"tag": "0001_previous_hammerhead",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1755313460806,
-			"tag": "0002_black_pet_avengers",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1755164868610,
+      "tag": "0000_useful_vargas",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755165489298,
+      "tag": "0001_previous_hammerhead",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755313460806,
+      "tag": "0002_black_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757128557403,
+      "tag": "0003_cool_pride",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1757133127681,
+      "tag": "0004_parched_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1757133970751,
+      "tag": "0005_aromatic_dragon_man",
+      "breakpoints": true
+    }
+  ]
 }

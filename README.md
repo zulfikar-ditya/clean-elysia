@@ -10,5 +10,5 @@
 - [x] Packages + Helper
 - [x] Redis Cache
 - [ ] Event Queue
-- [ ] RBAC
+- [x] RBAC
 - [ ] Clickhouse
