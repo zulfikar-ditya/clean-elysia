@@ -10,7 +10,8 @@
 		"build:api": "bun build apps/apis/serve.ts --outdir=dist --target=node",
 		"lint": "bun run eslint . --ext .ts,.js",
 		"format": "bun run prettier --write .",
-		"seed": "bun run ./infra/seed/index.ts"
+		"seed": "bun run ./infra/seed/index.ts",
+		"prepare": "husky install"
 	},
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",
@@ -41,6 +42,7 @@
 		"eslint": "^9.33.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",
+		"husky": "^9.0.0",
 		"pino-pretty": "^13.1.1",
 		"tsx": "^4.20.4",
 		"typescript-eslint": "^8.39.1"
