@@ -1,6 +1,6 @@
 import { db, rolePermissionTable, roleTable } from "@postgres/index";
 import { DatatableType, SortDirection } from "../types/datatable";
-import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, ne, not, or, SQL } from "drizzle-orm";
 import { defaultSort } from "@default/sort";
 import { DatatableToolkit } from "@toolkit/datatable";
 import { PaginationResponse } from "../types/pagination";
@@ -280,6 +280,19 @@ export const RoleRepository = () => {
 				.execute();
 
 			await dbInstance.delete(roleTable).where(eq(roleTable.id, id)).execute();
+		},
+
+		selectOptions: async (): Promise<{ id: string; name: string }[]> => {
+			const roles = await dbInstance.query.roles.findMany({
+				where: ne(roleTable.name, "superuser"),
+				columns: {
+					id: true,
+					name: true,
+				},
+				orderBy: asc(roleTable.name),
+			});
+
+			return roles;
 		},
 	};
 };

@@ -14,6 +14,15 @@ export type PermissionList = {
 	updated_at: Date;
 };
 
+export type PermissionSelectOptions = {
+	group: string;
+	permissions: {
+		id: string;
+		name: string;
+		group: string;
+	}[];
+};
+
 export const PermissionRepository = () => {
 	const dbInstance = db;
 
@@ -226,6 +235,22 @@ export const PermissionRepository = () => {
 			await dbInstance
 				.delete(permissionTable)
 				.where(eq(permissionTable.id, id));
+		},
+
+		selectOptions: async (): Promise<PermissionSelectOptions[]> => {
+			const dataPermissions = await db.query.permissions.findMany({
+				columns: { id: true, name: true, group: true },
+			});
+			const grouped: Record<string, PermissionSelectOptions["permissions"]> =
+				{};
+			dataPermissions.forEach((perm) => {
+				if (!grouped[perm.group]) grouped[perm.group] = [];
+				grouped[perm.group].push(perm);
+			});
+			return Object.entries(grouped).map(([group, permissions]) => ({
+				group,
+				permissions,
+			}));
 		},
 	};
 };

@@ -1,22 +1,10 @@
-import { db, emailVerificationTable } from "@postgres/index";
-import { usersTable } from "@postgres/user";
-import { Hash } from "@security/hash";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
-import { and, eq, isNull } from "drizzle-orm";
 import { UserInformation } from "@apis/types/UserInformation";
 import { AppContext } from "@apis/types/elysia";
 import { StrongPassword } from "@default/strong-password";
-import { UserRepository } from "../repositories";
-import { StrToolkit } from "@toolkit/string";
-import {
-	AppConfig,
-	DateToolkit,
-	EmailService,
-	verificationTokenLifetime,
-} from "@packages/*";
-import { UnauthorizedError } from "../errors";
-import { Cache } from "@packages_cache/*";
+import { Cache, UserInformationCacheKey } from "@packages_cache/*";
+import { AuthService } from "../services/auth.service";
 
 const AuthSchema = {
 	LoginSchema: vine.object({
@@ -51,76 +39,17 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		const user = await db
-			.select({
-				id: usersTable.id,
-				name: usersTable.name,
-				password: usersTable.password,
-				email: usersTable.email,
-				status: usersTable.status,
-				email_verified_at: usersTable.email_verified_at,
-			})
-			.from(usersTable)
-			.where(
-				and(
-					eq(usersTable.email, validation.email),
-					isNull(usersTable.deleted_at),
-				),
-			)
-			.limit(1);
-
-		// Use consistent error message for security
-		const invalidCredentialsError = [
-			{
-				field: "email",
-				message: "Invalid email or password",
-			},
-		];
-
-		if (user.length === 0) {
-			return ResponseToolkit.validationError(ctx, invalidCredentialsError);
-		}
-
-		const isPasswordValid = await Hash.compareHash(
+		const user: UserInformation = await AuthService.login(
+			validation.email,
 			validation.password,
-			user[0].password,
 		);
-		if (!isPasswordValid) {
-			return ResponseToolkit.validationError(ctx, invalidCredentialsError);
-		}
 
-		// check if the email is verified
-		if (!user[0].email_verified_at) {
-			return ResponseToolkit.validationError(ctx, [
-				{
-					field: "email",
-					message: "Please verify your email address before logging in",
-				},
-			]);
-		}
-
-		// check if the status is active
-		if (user[0].status !== "active") {
-			return ResponseToolkit.validationError(ctx, [
-				{
-					field: "email",
-					message: `Your account is ${user[0].status}. Please contact support.`,
-				},
-			]);
-		}
-
-		// cache the user
-		const userInformation = await UserRepository().UserInformation(user[0].id);
-		if (!userInformation) {
-			throw new UnauthorizedError("User not found");
-		}
-
-		const cacheKey = `user:${user[0].id}`;
-		await Cache.set(cacheKey, userInformation, 60 * 60);
+		const cacheKey = UserInformationCacheKey(user.id);
+		await Cache.set(cacheKey, user, 60 * 60);
 
 		/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 		const JwtToken = await ctx.jwt.sign({
-			id: user[0].id,
+			id: user.id,
 		});
 
 		return ResponseToolkit.success<{
@@ -129,7 +58,7 @@ export const AuthHandler = {
 		}>(
 			ctx,
 			{
-				user_information: userInformation,
+				user_information: user,
 				access_token: JwtToken,
 			},
 			"Login successful",
@@ -149,60 +78,7 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		// validate if the email exists
-		const isEmailExist = await UserRepository()
-			.db.select()
-			.from(usersTable)
-			.where(
-				and(
-					eq(usersTable.email, validate.email),
-					isNull(usersTable.deleted_at),
-				),
-			)
-			.limit(1);
-
-		if (isEmailExist.length > 0) {
-			return ResponseToolkit.validationError(ctx, [
-				{
-					field: "email",
-					message: "An account with this email already exists",
-				},
-			]);
-		}
-
-		const hashedPassword = await Hash.generateHash(validate.password);
-		await db.transaction(async (trx) => {
-			const user = await trx
-				.insert(usersTable)
-				.values({
-					name: validate.name,
-					email: validate.email,
-					password: hashedPassword,
-					status: "active",
-				})
-				.returning();
-
-			// create email verification token
-			const token = StrToolkit.random(255);
-			await trx.insert(emailVerificationTable).values({
-				token,
-				user_id: user[0].id,
-				expired_at: verificationTokenLifetime,
-			});
-
-			// send email
-			await EmailService.sendEmail({
-				subject: "Email verification",
-				to: validate.email,
-				template: "/auth/email-verification",
-				variables: {
-					user_id: user[0].id,
-					user_name: user[0].name,
-					user_email: user[0].email,
-					verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
-				},
-			});
-		});
+		await AuthService.register(validate);
 
 		return ResponseToolkit.success(
 			ctx,
@@ -222,60 +98,7 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		// find user
-		const user = await UserRepository()
-			.db.select()
-			.from(usersTable)
-			.where(
-				and(
-					eq(usersTable.email, validate.email),
-					isNull(usersTable.deleted_at),
-				),
-			)
-			.limit(1);
-
-		// Always return success for security (don't reveal if email exists)
-		if (user.length === 0) {
-			return ResponseToolkit.success(
-				ctx,
-				{},
-				"If the email exists, verification email has been sent",
-				200,
-			);
-		}
-
-		// Check if already verified
-		if (user[0].email_verified_at) {
-			return ResponseToolkit.success(ctx, {}, "Email is already verified", 200);
-		}
-
-		// create email verification token
-		const token = StrToolkit.random(255);
-		await db.transaction(async (trx) => {
-			// delete existing tokens
-			await trx
-				.delete(emailVerificationTable)
-				.where(eq(emailVerificationTable.user_id, user[0].id));
-
-			await trx.insert(emailVerificationTable).values({
-				token,
-				user_id: user[0].id,
-				expired_at: verificationTokenLifetime,
-			});
-
-			// send email
-			await EmailService.sendEmail({
-				subject: "Email verification",
-				to: validate.email, // Use validated email
-				template: "/auth/email-verification",
-				variables: {
-					user_id: user[0].id,
-					user_name: user[0].name,
-					user_email: user[0].email,
-					verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
-				},
-			});
-		});
+		await AuthService.resentVerificationEmail(validate.email);
 
 		return ResponseToolkit.success(ctx, {}, "Verification email sent", 200);
 	},
@@ -290,51 +113,7 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		// find token
-		const emailVerification = await db
-			.select()
-			.from(emailVerificationTable)
-			.where(eq(emailVerificationTable.token, validate.token))
-			.limit(1);
-
-		if (emailVerification.length === 0) {
-			return ResponseToolkit.validationError(ctx, [
-				{
-					field: "token",
-					message: "Invalid or expired verification token",
-				},
-			]);
-		}
-
-		// validate the token lifetime - Fixed logic
-		const tokenExpiredAt = DateToolkit.parse(
-			emailVerification[0].expired_at.toString(),
-		);
-		const now = DateToolkit.now();
-
-		if (DateToolkit.isBefore(tokenExpiredAt, now)) {
-			// Fixed: token expires when expired_at < now
-			return ResponseToolkit.validationError(ctx, [
-				{
-					field: "token",
-					message: "Verification token has expired. Please request a new one.",
-				},
-			]);
-		}
-
-		await db.transaction(async (trx) => {
-			await trx
-				.update(usersTable)
-				.set({
-					email_verified_at: DateToolkit.now().toDate(),
-				})
-				.where(eq(usersTable.id, emailVerification[0].user_id));
-
-			// delete email verification record
-			await trx
-				.delete(emailVerificationTable)
-				.where(eq(emailVerificationTable.id, emailVerification[0].id));
-		});
+		await AuthService.verifyEmail(validate.token);
 
 		return ResponseToolkit.success(ctx, {}, "Email verified successfully", 200);
 	},
