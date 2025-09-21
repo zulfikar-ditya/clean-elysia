@@ -12,6 +12,7 @@ import {
 } from "@packages/*";
 import { UnprocessableEntityError } from "../errors";
 import { UserInformation } from "../types/UserInformation";
+import { sendEmailQueue } from "packages/event/queue/send-email.queue";
 
 export const AuthService = {
 	async login(email: string, password: string): Promise<UserInformation> {
@@ -87,7 +88,7 @@ export const AuthService = {
 				expired_at: verificationTokenLifetime,
 			});
 
-			await EmailService.sendEmail({
+			await sendEmailQueue.add("send-email", {
 				subject: "Email verification",
 				to: data.email,
 				template: "/auth/email-verification",
@@ -98,6 +99,18 @@ export const AuthService = {
 					verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
 				},
 			});
+
+			// await EmailService.sendEmail({
+			// 	subject: "Email verification",
+			// 	to: data.email,
+			// 	template: "/auth/email-verification",
+			// 	variables: {
+			// 		user_id: newUser[0].id,
+			// 		user_name: newUser[0].name,
+			// 		user_email: newUser[0].email,
+			// 		verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
+			// 	},
+			// });
 		});
 	},
 

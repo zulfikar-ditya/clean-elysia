@@ -4,7 +4,7 @@ import { AppConfig, MailConfig } from "@packages_config/*";
 import { log } from "packages/logger/logger";
 import { transporter } from "./transport.mail";
 
-interface EmailOptions {
+export interface EmailOptions {
 	to: string;
 	subject: string;
 	template?: string;
