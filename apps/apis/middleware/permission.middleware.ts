@@ -3,7 +3,7 @@ import { ForbiddenError, UnauthorizedError } from "../errors";
 import { AppContext } from "../types/elysia";
 import { PermissionGuard } from "@packages/*";
 
-export const permissionMiddleware = async (
+export const permissionMiddleware = (
 	ctx: AppContext,
 	permissions: string[],
 ) => {

@@ -11,6 +11,8 @@ import { emailVerificationTable } from "./email_verification";
 import { passwordResetPasswordTable } from "./password_reset_token";
 import { userRolesTable } from "./rbac";
 
+export type UserStatusEnum = "active" | "inactive" | "suspended" | "blocked";
+
 export const userStatusEnum = pgEnum("user_status", [
 	"active",
 	"inactive",

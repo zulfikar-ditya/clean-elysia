@@ -1,6 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-bun run lint
+bun install
 bun run format
+bun run lint
 bun run build
