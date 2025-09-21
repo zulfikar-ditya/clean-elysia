@@ -63,7 +63,7 @@ jobs:
           node-version: "22"
 
       - name: Install drizzle-kit (Node + npx)
-        run: npm install -g drizzle-kit
+        run: npm install drizzle-kit
 
       - name: Install dependencies (Bun)
         run: bun install --production --ignore-scripts
