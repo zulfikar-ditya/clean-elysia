@@ -10,7 +10,8 @@
 		"build:api": "bun build apps/apis/serve.ts --outdir=dist --target=node",
 		"lint": "bun run eslint . --ext .ts,.js",
 		"format": "bun run prettier --write .",
-		"seed": "bun run ./infra/seed/index.ts"
+		"seed": "bun run ./infra/seed/index.ts",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",
@@ -20,8 +21,8 @@
 		"bcryptjs": "^3.0.2",
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.13",
-		"dotenv": "^17.2.1",
-		"drizzle-orm": "^0.44.4",
+		"dotenv": "^17.2.2",
+		"drizzle-orm": "^0.44.5",
 		"drizzle-seed": "^0.3.1",
 		"elysia": "latest",
 		"ioredis": "^5.7.0",
@@ -33,7 +34,7 @@
 		"@types/bcrypt": "^6.0.0",
 		"@types/bun": "^1.2.20",
 		"@types/crypto-js": "^4.2.2",
-		"@types/node": "^24.3.0",
+		"@types/node": "^24.5.2",
 		"@types/nodemailer": "^7.0.0",
 		"@types/pg": "^8.15.5",
 		"bun-types": "latest",
@@ -41,13 +42,14 @@
 		"eslint": "^9.33.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",
+		"husky": "^9.1.7",
 		"pino-pretty": "^13.1.1",
-		"tsx": "^4.20.4",
+		"tsx": "^4.20.5",
 		"typescript-eslint": "^8.39.1"
 	},
 	"type": "module",
 	"private": true,
 	"peerDependencies": {
-		"typescript": "^5"
+		"typescript": "^5.9.2"
 	}
 }

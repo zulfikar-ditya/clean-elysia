@@ -35,34 +35,34 @@ routes.group("", (app) => {
 	app.patch("/profile", ProfileHandler.updateProfile);
 	app.patch("/profile/password", ProfileHandler.updatePassword);
 
-	app.group("/settings", (app) => {
-		app.derive(async (ctx) => {
-			await roleMiddleware(ctx as AppContext, []);
+	app.group("/settings", (settingRoutes) => {
+		settingRoutes.derive((ctx) => {
+			roleMiddleware(ctx as AppContext, []);
 			return {};
 		});
 
-		app.get("/permission", PermissionHandler.list);
-		app.post("/permission", PermissionHandler.create);
-		app.get("/permission/:id", PermissionHandler.detail);
-		app.patch("/permission/:id", PermissionHandler.update);
-		app.delete("/permission/:id", PermissionHandler.delete);
+		settingRoutes.get("/permission", PermissionHandler.list);
+		settingRoutes.post("/permission", PermissionHandler.create);
+		settingRoutes.get("/permission/:id", PermissionHandler.detail);
+		settingRoutes.patch("/permission/:id", PermissionHandler.update);
+		settingRoutes.delete("/permission/:id", PermissionHandler.delete);
 
-		app.get("/role", RoleHandler.list);
-		app.post("/role", RoleHandler.create);
-		app.get("/role/:id", RoleHandler.detail);
-		app.patch("/role/:id", RoleHandler.update);
-		app.delete("/role/:id", RoleHandler.delete);
+		settingRoutes.get("/role", RoleHandler.list);
+		settingRoutes.post("/role", RoleHandler.create);
+		settingRoutes.get("/role/:id", RoleHandler.detail);
+		settingRoutes.patch("/role/:id", RoleHandler.update);
+		settingRoutes.delete("/role/:id", RoleHandler.delete);
 
-		app.get("/user", UserHandler.list);
-		app.post("/user", UserHandler.create);
-		app.get("/user/:id", UserHandler.detail);
-		app.patch("/user/:id", UserHandler.update);
-		app.delete("/user/:id", UserHandler.delete);
+		settingRoutes.get("/user", UserHandler.list);
+		settingRoutes.post("/user", UserHandler.create);
+		settingRoutes.get("/user/:id", UserHandler.detail);
+		settingRoutes.patch("/user/:id", UserHandler.update);
+		settingRoutes.delete("/user/:id", UserHandler.delete);
 
-		app.get("/select/permission", SettingSelectHandler.permissions);
-		app.get("/select/role", SettingSelectHandler.roles);
+		settingRoutes.get("/select/permission", SettingSelectHandler.permissions);
+		settingRoutes.get("/select/role", SettingSelectHandler.roles);
 
-		return app;
+		return settingRoutes;
 	});
 
 	return app;

@@ -3,7 +3,7 @@ import { UserInformation } from "@apis/types/UserInformation";
 import { UnauthorizedError } from "@apis/errors";
 import { RoleGuard } from "@packages/*";
 
-export const roleMiddleware = async (ctx: AppContext, roleNames: string[]) => {
+export const roleMiddleware = (ctx: AppContext, roleNames: string[]) => {
 	const userInformation: UserInformation = ctx.user;
 	if (!userInformation) {
 		throw new UnauthorizedError();

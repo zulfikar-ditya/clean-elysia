@@ -1,0 +1,64 @@
+name: Build & Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - "feat/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Bun (app install/lint/build)
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # Set up Node (for drizzle-kit via npx)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies (Bun)
+        run: bun install
+
+      - name: Lint (Bun)
+        run: bun run lint
+
+      - name: Format (Bun)
+        run: bun run format
+
+      # Run drizzle-kit with Node
+      - name: Drizzle Generate (Node + npx)
+        run: npx drizzle-kit generate --config=drizzle.config.ts
+
+      - name: Drizzle Migrate (Node + npx)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_db
+        run: npx drizzle-kit migrate --config=drizzle.config.ts
+
+      - name: Build (Bun)
+        run: bun run build:api

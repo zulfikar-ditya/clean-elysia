@@ -39,23 +39,41 @@ db-seed:
 	bun run seed
 
 # Database commands
+# db-generate:
+# 	bunx drizzle-kit generate
+
+# db-migrate:
+# 	bunx drizzle-kit migrate
+
+# db-push:
+# 	bunx drizzle-kit push
+
+# db-pull:
+# 	bunx drizzle-kit introspect
+
+# db-studio:
+# 	bunx drizzle-kit studio
+
+# db-drop:
+# 	bunx drizzle-kit drop
+
 db-generate:
-	bunx drizzle-kit generate
+	npx drizzle-kit generate
 
 db-migrate:
-	bunx drizzle-kit migrate
+	npx drizzle-kit migrate
 
 db-push:
-	bunx drizzle-kit push
+	npx drizzle-kit push
 
 db-pull:
-	bunx drizzle-kit introspect
+	npx drizzle-kit introspect
 
 db-studio:
-	bunx drizzle-kit studio
+	npx drizzle-kit studio
 
 db-drop:
-	bunx drizzle-kit drop
+	npx drizzle-kit drop
 
 # Combined commands for common workflows
 fresh: db-drop db-push seed

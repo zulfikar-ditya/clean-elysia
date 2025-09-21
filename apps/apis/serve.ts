@@ -6,7 +6,8 @@ import { Elysia } from "elysia";
 import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import routes from "@apis/routes/app.routes";
 import { errors } from "@vinejs/vine";
-import { ForbiddenError } from "./errors";
+import { ForbiddenError, UnprocessableEntityError } from "./errors";
+import { NotFoundError } from "./errors/not-found-error";
 
 const app = new Elysia()
 	.derive(() => ({
@@ -43,6 +44,30 @@ const app = new Elysia()
 			};
 		}
 
+		if (error instanceof UnprocessableEntityError) {
+			set.status = 422;
+			const errorMessages =
+				typeof error.error === "string"
+					? [{ field: "general", message: error.error }]
+					: error.error || [];
+
+			return {
+				status: 422,
+				success: false,
+				message: error.message || "Unprocessable Entity",
+				errors: errorMessages,
+			};
+		}
+
+		if (error instanceof NotFoundError) {
+			set.status = 404;
+			return {
+				status: 404,
+				success: false,
+				message: error.message || "Not Found",
+			};
+		}
+
 		if (error instanceof UnauthorizedError) {
 			set.status = 401;
 			return {
@@ -63,8 +88,6 @@ const app = new Elysia()
 			};
 		}
 
-		console.error("Error occurred:", error);
-
 		switch (code) {
 			case "NOT_FOUND":
 				set.status = 404;
@@ -84,11 +107,8 @@ const app = new Elysia()
 					data: null,
 				};
 			case "UNKNOWN":
-				((set.status = 500),
-					ctxLog?.error(
-						{ code, err: error, cause: error.cause },
-						"unhandled error",
-					));
+				set.status = 500;
+				ctxLog?.error({ code, err: error }, "unknown error");
 				return {
 					status: 500,
 					success: false,
@@ -113,5 +133,4 @@ const app = new Elysia()
 
 export default app.fetch;
 
-// console.log(`Server started in ${AppConfig.APP_URL}`);
 log.info({}, `application running on port ${AppConfig.APP_PORT}`);

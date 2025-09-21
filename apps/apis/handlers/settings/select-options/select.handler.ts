@@ -13,12 +13,21 @@ export const SettingSelectHandler = {
 			},
 		});
 
-		// Group permissions by 'group' property
 		const groupedPermissions = permissions.reduce(
-			(acc: Record<string, any[]>, permission: any) => {
+			(
+				acc: Record<string, { id: string; name: string }[]>,
+				permission: {
+					id: string;
+					name: string;
+					group: string | null;
+				},
+			) => {
 				const group = permission.group || "Ungrouped";
 				if (!acc[group]) acc[group] = [];
-				acc[group].push(permission);
+				acc[group].push({
+					id: permission.id,
+					name: permission.name,
+				});
 				return acc;
 			},
 			{},
