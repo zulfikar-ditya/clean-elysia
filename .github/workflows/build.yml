@@ -65,6 +65,9 @@ jobs:
       - name: Install dependencies (Bun)
         run: bun install --production --ignore-scripts
 
+      - name: Install drizzle-kit (Node + npx)
+        run: npm install -g drizzle-kit
+
       - name: Drizzle Generate (Node + npx)
         run: npx drizzle-kit generate --config=drizzle.config.ts
 
