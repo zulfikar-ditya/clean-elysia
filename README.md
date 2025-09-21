@@ -9,6 +9,6 @@
 - [x] Toolkit, Plugin, Logger, Default
 - [x] Packages + Helper
 - [x] Redis Cache
-- [ ] Event Queue
+- [x] Event Queue
 - [x] RBAC
 - [ ] Clickhouse

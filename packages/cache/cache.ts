@@ -1,18 +1,13 @@
-import { RedisConfig } from "@packages_config/*";
 import Redis from "ioredis";
 import { log } from "@packages/logger";
+import { RedisClient } from "packages/redis/redis-client";
 
 class Cache {
 	private static redis: Redis | null = null;
 
 	private static getRedisClient(): Redis {
 		if (!this.redis) {
-			this.redis = new Redis({
-				host: RedisConfig.REDIS_HOST,
-				port: RedisConfig.REDIS_PORT,
-				password: RedisConfig.REDIS_PASSWORD || undefined,
-				db: RedisConfig.REDIS_DB,
-			});
+			this.redis = RedisClient.getRedisClient();
 		}
 
 		return this.redis;

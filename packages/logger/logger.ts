@@ -44,33 +44,27 @@ const options: LoggerOptions = {
 			// Create a copy to avoid mutating the original object
 			const sanitized = { ...obj };
 
-			// Remove sensitive fields
-			delete sanitized.password;
-			delete sanitized.token;
-			delete sanitized.authorization;
-			delete sanitized.bearer;
-			// delete sanitized.user;
-			// delete sanitized.req;
-			// delete sanitized.res;
+			// Helper to recursively remove sensitive fields
+			const sensitivePattern =
+				/password|token|auth|bearer|secret|key|credential/i;
 
-			// Remove any field containing 'password', 'token', 'auth', 'bearer' (case insensitive)
-			Object.keys(sanitized).forEach((key) => {
-				if (/password|token|auth|bearer|secret|key|credential/i.test(key)) {
-					delete sanitized[key];
-				}
-			});
-
-			// Remove sensitive data from nested objects (like request body)
-			if (sanitized.body && typeof sanitized.body === "object") {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const sanitizedBody = { ...sanitized.body } as Record<string, any>;
-				Object.keys(sanitizedBody).forEach((key) => {
-					if (/password|token|auth|bearer|secret|key|credential/i.test(key)) {
-						delete sanitizedBody[key];
+			// eslint-disable-next-line
+			function deepSanitize(objectSanitize: Record<string, any>) {
+				for (const key of Object.keys(objectSanitize)) {
+					if (sensitivePattern.test(key)) {
+						delete objectSanitize[key];
+					} else if (
+						objectSanitize[key] &&
+						typeof objectSanitize[key] === "object" &&
+						!Array.isArray(objectSanitize[key])
+					) {
+						// eslint-disable-next-line
+						deepSanitize(objectSanitize[key]);
 					}
-				});
-				sanitized.body = sanitizedBody;
+				}
 			}
+
+			deepSanitize(sanitized);
 
 			return sanitized;
 		},
