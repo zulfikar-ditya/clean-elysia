@@ -52,6 +52,15 @@ export type UserDetail = {
 	updated_at: Date | null;
 };
 
+export type UserForAuth = {
+	id: string;
+	name: string;
+	email: string;
+	password: string;
+	status: UserStatusEnum | null;
+	email_verified_at: Date | null;
+};
+
 export const UserRepository = () => {
 	const dbInstance = db;
 
@@ -426,6 +435,31 @@ export const UserRepository = () => {
 					),
 				})),
 			};
+		},
+
+		findByEmail: async (email: string): Promise<UserForAuth> => {
+			const user = await dbInstance.query.users.findFirst({
+				where: and(eq(usersTable.email, email), isNull(usersTable.deleted_at)),
+				columns: {
+					id: true,
+					name: true,
+					email: true,
+					password: true,
+					status: true,
+					email_verified_at: true,
+				},
+			});
+
+			if (!user) {
+				throw new UnprocessableEntityError("Validation error", [
+					{
+						field: "email",
+						message: "Invalid email or password",
+					},
+				]);
+			}
+
+			return user;
 		},
 	};
 };

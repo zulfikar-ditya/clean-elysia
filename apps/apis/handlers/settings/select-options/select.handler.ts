@@ -1,7 +1,7 @@
+import { RoleRepository } from "@app/apis/repositories/role.repository";
 import { AppContext } from "@app/apis/types/elysia";
-import { db, roleTable } from "@postgres/index";
+import { db } from "@postgres/index";
 import { ResponseToolkit } from "@toolkit/response";
-import { ne } from "drizzle-orm";
 
 export const SettingSelectHandler = {
 	permissions: async (ctx: AppContext) => {
@@ -42,14 +42,7 @@ export const SettingSelectHandler = {
 	},
 
 	roles: async (ctx: AppContext) => {
-		const roles = await db.query.roles.findMany({
-			where: ne(roleTable.name, "superuser"),
-			columns: {
-				id: true,
-				name: true,
-			},
-		});
-
+		const roles = await RoleRepository().selectOptions();
 		return ResponseToolkit.success<{ id: string; name: string }[]>(
 			ctx,
 			roles,
