@@ -47,16 +47,19 @@ const options: LoggerOptions = {
 			// Helper to recursively remove sensitive fields
 			const sensitivePattern =
 				/password|token|auth|bearer|secret|key|credential/i;
-			function deepSanitize(obj: Record<string, any>) {
-				for (const key of Object.keys(obj)) {
+
+			// eslint-disable-next-line
+			function deepSanitize(objectSanitize: Record<string, any>) {
+				for (const key of Object.keys(objectSanitize)) {
 					if (sensitivePattern.test(key)) {
-						delete obj[key];
+						delete objectSanitize[key];
 					} else if (
-						obj[key] &&
-						typeof obj[key] === "object" &&
-						!Array.isArray(obj[key])
+						objectSanitize[key] &&
+						typeof objectSanitize[key] === "object" &&
+						!Array.isArray(objectSanitize[key])
 					) {
-						deepSanitize(obj[key]);
+						// eslint-disable-next-line
+						deepSanitize(objectSanitize[key]);
 					}
 				}
 			}

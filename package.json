@@ -17,7 +17,7 @@
 		"lint": "bun run eslint . --ext .ts,.js",
 		"format": "bun run prettier --write .",
 		"seed": "bun run ./infra/seed/index.ts",
-		"prepare": "husky",
+		"prepare": "husky install",
 		"dev:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run dev:server\" \"bun run dev:worker\"",
 		"build:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run build:server\" \"bun run build:worker\"",
 		"start:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run start:server\" \"bun run start:worker\""

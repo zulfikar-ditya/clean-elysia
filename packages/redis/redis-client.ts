@@ -27,8 +27,8 @@ export class RedisClient {
 				maxRetriesPerRequest: null,
 				db: RedisConfig.REDIS_DB,
 			});
-	}
+		}
 
-	return this.queueRedis;
+		return this.queueRedis;
 	}
 }
