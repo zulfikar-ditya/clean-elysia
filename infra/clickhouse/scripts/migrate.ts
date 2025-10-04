@@ -1,13 +1,12 @@
-// scripts/migrate-clickhouse.ts
 import { createClient } from "@clickhouse/client";
 import { clickhouseConfig } from "@packages_config/*";
 import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 
-interface MigrationRecord {
+interface IMigrationFile {
 	version: string;
 	name: string;
-	executed_at: string;
+	path: string;
 }
 
 class ClickHouseMigrator {
@@ -24,13 +23,14 @@ class ClickHouseMigrator {
 	}
 
 	async initialize() {
-		// Create migrations tracking table
+		// eslint-disable-next-line no-console
+		console.log("creating schema_migrations table if not exists...");
 		await this.client.query({
 			query: `
         CREATE TABLE IF NOT EXISTS schema_migrations (
           version String,
           name String,
-          executed_at DateTime64(3) DEFAULT now64()
+          executed_at DateTime DEFAULT now()
         ) ENGINE = MergeTree()
         ORDER BY version
       `,
@@ -47,9 +47,7 @@ class ClickHouseMigrator {
 		return rows.map((r) => r.version);
 	}
 
-	async getMigrationFiles(): Promise<
-		Array<{ version: string; name: string; path: string }>
-	> {
+	async getMigrationFiles(): Promise<Array<IMigrationFile>> {
 		const files = await readdir(this.migrationsDir);
 		const migrations = files
 			.filter((f) => f.endsWith(".sql"))
@@ -66,11 +64,8 @@ class ClickHouseMigrator {
 		return migrations;
 	}
 
-	async executeMigration(migration: {
-		version: string;
-		name: string;
-		path: string;
-	}) {
+	async executeMigration(migration: IMigrationFile) {
+		// eslint-disable-next-line no-console
 		console.log(`Executing migration ${migration.version}_${migration.name}`);
 
 		const sql = await readFile(migration.path, "utf-8");
@@ -85,18 +80,13 @@ class ClickHouseMigrator {
 			await this.client.query({ query: statement });
 		}
 
-		// Record migration as executed
-		await this.client.query({
-			query: `
-        INSERT INTO schema_migrations (version, name)
-        VALUES ({version:String}, {name:String})
-      `,
-			query_params: {
-				version: migration.version,
-				name: migration.name,
-			},
+		await this.client.insert({
+			table: "schema_migrations",
+			values: [{ version: migration.version, name: migration.name }],
+			format: "JSONEachRow",
 		});
 
+		// eslint-disable-next-line no-console
 		console.log(`✓ Migration ${migration.version}_${migration.name} completed`);
 	}
 
@@ -111,33 +101,31 @@ class ClickHouseMigrator {
 		);
 
 		if (pendingMigrations.length === 0) {
+			// eslint-disable-next-line no-console
 			console.log("No pending migrations");
 			return;
 		}
 
+		// eslint-disable-next-line no-console
 		console.log(`Found ${pendingMigrations.length} pending migrations`);
 
 		for (const migration of pendingMigrations) {
 			await this.executeMigration(migration);
 		}
 
+		// eslint-disable-next-line no-console
 		console.log("All migrations completed successfully");
-	}
-
-	async rollback(targetVersion?: string) {
-		// Implement rollback logic if needed
-		// ClickHouse doesn't support transactions, so this would need careful handling
-		throw new Error(
-			"Rollback not implemented - ClickHouse migrations should be carefully planned",
-		);
 	}
 }
 
 // CLI runner
 async function main() {
 	const migrator = new ClickHouseMigrator();
-
 	const command = process.argv[2];
+
+	let executed: string[] = [];
+	let all: Array<IMigrationFile> = [];
+	let pending: Array<IMigrationFile> = [];
 
 	switch (command) {
 		case "migrate":
@@ -145,19 +133,25 @@ async function main() {
 			break;
 		case "status":
 			await migrator.initialize();
-			const executed = await migrator.getExecutedMigrations();
-			const all = await migrator.getMigrationFiles();
-			const pending = all.filter((m) => !executed.includes(m.version));
+			executed = await migrator.getExecutedMigrations();
+			all = await migrator.getMigrationFiles();
+			pending = all.filter((m) => !executed.includes(m.version));
 
+			// eslint-disable-next-line no-console
 			console.log(`Executed: ${executed.length}`);
+			// eslint-disable-next-line no-console
 			console.log(`Pending: ${pending.length}`);
 
 			if (pending.length > 0) {
+				// eslint-disable-next-line no-console
 				console.log("Pending migrations:");
+
+				// eslint-disable-next-line no-console
 				pending.forEach((m) => console.log(`  - ${m.version}_${m.name}`));
 			}
 			break;
 		default:
+			// eslint-disable-next-line no-console
 			console.log("Usage: npm run migrate:clickhouse [migrate|status]");
 	}
 
@@ -165,6 +159,7 @@ async function main() {
 }
 
 if (require.main === module) {
+	// eslint-disable-next-line no-console
 	main().catch(console.error);
 }
 

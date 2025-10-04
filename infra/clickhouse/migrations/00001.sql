@@ -1,4 +1,3 @@
-// infra/migrations/clickhouse/001_initial_tables.sql
 -- User Activities Table
 CREATE TABLE IF NOT EXISTS user_activities (
     id UUID DEFAULT generateUUIDv4(),
@@ -11,7 +10,7 @@ CREATE TABLE IF NOT EXISTS user_activities (
     metadata Map(String, String)
 ) ENGINE = MergeTree()
 ORDER BY (user_id, timestamp)
-TTL timestamp + INTERVAL 1 YEAR;
+TTL toDateTime(timestamp) + INTERVAL 1 YEAR;
 
 -- Auth Events Table
 CREATE TABLE IF NOT EXISTS auth_events (
@@ -25,7 +24,7 @@ CREATE TABLE IF NOT EXISTS auth_events (
     failure_reason String
 ) ENGINE = MergeTree()
 ORDER BY (user_id, timestamp)
-TTL timestamp + INTERVAL 2 YEAR;
+TTL toDateTime(timestamp) + INTERVAL 2 YEAR;
 
 -- Permission Usage Table
 CREATE TABLE IF NOT EXISTS permission_usage (
@@ -37,7 +36,7 @@ CREATE TABLE IF NOT EXISTS permission_usage (
     execution_time_ms UInt32
 ) ENGINE = MergeTree()
 ORDER BY (permission_name, timestamp)
-TTL timestamp + INTERVAL 6 MONTH;
+TTL toDateTime(timestamp) + INTERVAL 6 MONTH;
 
 -- Materialized views for analytics
 CREATE MATERIALIZED VIEW IF NOT EXISTS daily_user_activities

@@ -17,6 +17,7 @@ export class BaseRepository {
 		return this.client;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	static async query<T = any>(
 		sql: string,
 		params?: Record<string, unknown>,
@@ -27,7 +28,7 @@ export class BaseRepository {
 			query_params: params,
 			format: "JSONEachRow",
 		});
-		return (await resultSet.json<T>()) as T[];
+		return await resultSet.json<T>();
 	}
 
 	static async exec(
