@@ -1,4 +1,3 @@
-// src/logger.ts
 import { pino, Logger, destination } from "pino";
 import { wrap } from "@bogeychan/elysia-logger";
 import { AppConfig } from "@packages_config/*";

@@ -25,6 +25,15 @@ const AuthSchema = {
 	ResentVerificationEmailSchema: vine.object({
 		email: vine.string().email().normalizeEmail().maxLength(255),
 	}),
+
+	ForgotPasswordSchema: vine.object({
+		email: vine.string().email().normalizeEmail().maxLength(255),
+	}),
+
+	ResetPasswordSchema: vine.object({
+		token: vine.string().trim().minLength(1).maxLength(255),
+		password: vine.string().regex(StrongPassword).confirmed(),
+	}),
 };
 
 export const AuthHandler = {
@@ -116,5 +125,36 @@ export const AuthHandler = {
 		await AuthService.verifyEmail(validate.token);
 
 		return ResponseToolkit.success(ctx, {}, "Email verified successfully", 200);
+	},
+
+	forgotPassword: async (ctx: AppContext) => {
+		const payload = ctx.body as {
+			email: string;
+		};
+
+		const validate = await vine.validate({
+			schema: AuthSchema.ForgotPasswordSchema,
+			data: payload,
+		});
+
+		await AuthService.forgotPassword(validate.email);
+
+		return ResponseToolkit.success(ctx, {}, "Password reset email sent", 200);
+	},
+
+	resetPassword: async (ctx: AppContext) => {
+		const payload = ctx.body as {
+			token: string;
+			password: string;
+		};
+
+		const validate = await vine.validate({
+			schema: AuthSchema.ResetPasswordSchema,
+			data: payload,
+		});
+
+		await AuthService.resetPassword(validate.token, validate.password);
+
+		return ResponseToolkit.success(ctx, {}, "Password reset successfully", 200);
 	},
 };
