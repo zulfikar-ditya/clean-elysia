@@ -1,4 +1,4 @@
-import { db, userRolesTable, usersTable } from "@postgres/index";
+import { db, user_rolesTable, usersTable } from "@postgres/index";
 import { UserInformation } from "@apis/types/UserInformation";
 import {
 	and,
@@ -122,11 +122,11 @@ export const UserRepository = () => {
 						exists(
 							dbInstance
 								.select()
-								.from(userRolesTable)
+								.from(user_rolesTable)
 								.where(
 									and(
-										eq(userRolesTable.userId, usersTable.id),
-										eq(userRolesTable.roleId, filter.role_id as string),
+										eq(user_rolesTable.userId, usersTable.id),
+										eq(user_rolesTable.roleId, filter.role_id as string),
 									),
 								),
 						),
@@ -254,7 +254,7 @@ export const UserRepository = () => {
 						roleId,
 					}));
 
-					await dbInstance.insert(userRolesTable).values(userRoles);
+					await dbInstance.insert(user_rolesTable).values(userRoles);
 				}
 			}
 		},
@@ -336,8 +336,8 @@ export const UserRepository = () => {
 			// remove all role or adding new role
 			if (data.role_ids && data.role_ids.length > 0) {
 				await dbInstance
-					.delete(userRolesTable)
-					.where(eq(userRolesTable.userId, userId));
+					.delete(user_rolesTable)
+					.where(eq(user_rolesTable.userId, userId));
 
 				const userRoles: {
 					userId: string;
@@ -346,11 +346,11 @@ export const UserRepository = () => {
 					userId,
 					roleId,
 				}));
-				await dbInstance.insert(userRolesTable).values(userRoles);
+				await dbInstance.insert(user_rolesTable).values(userRoles);
 			} else {
 				await dbInstance
-					.delete(userRolesTable)
-					.where(eq(userRolesTable.userId, userId));
+					.delete(user_rolesTable)
+					.where(eq(user_rolesTable.userId, userId));
 			}
 		},
 

@@ -1,6 +1,6 @@
 import { AppContext } from "@app/apis/types/elysia";
 import { StrongPassword } from "@default/strong-password";
-import { db, userRolesTable, usersTable } from "@postgres/index";
+import { db, user_rolesTable, usersTable } from "@postgres/index";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
 import { and, eq, isNull, not } from "drizzle-orm";
@@ -140,8 +140,8 @@ export const UserHandler = {
 			if (validate.role_ids && validate.role_ids.length > 0) {
 				if (updatedUser.length > 0) {
 					await trx
-						.delete(userRolesTable)
-						.where(eq(userRolesTable.userId, userId));
+						.delete(user_rolesTable)
+						.where(eq(user_rolesTable.userId, userId));
 					const userRoles: {
 						userId: string;
 						roleId: string;
@@ -149,13 +149,13 @@ export const UserHandler = {
 						userId,
 						roleId,
 					}));
-					await trx.insert(userRolesTable).values(userRoles);
+					await trx.insert(user_rolesTable).values(userRoles);
 				}
 			} else {
 				if (updatedUser.length > 0) {
 					await trx
-						.delete(userRolesTable)
-						.where(eq(userRolesTable.userId, userId));
+						.delete(user_rolesTable)
+						.where(eq(user_rolesTable.userId, userId));
 				}
 			}
 		});

@@ -2,7 +2,7 @@ import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { usersTable } from "./user";
 import { relations } from "drizzle-orm";
 
-export const emailVerificationTable = pgTable(
+export const email_verificationsTable = pgTable(
 	"email_verifications",
 	{
 		id: uuid().primaryKey().defaultRandom(),
@@ -19,11 +19,11 @@ export const emailVerificationTable = pgTable(
 	(table) => [index("email_verification_token_index").on(table.token)],
 );
 
-export const emailVerificationRelations = relations(
-	emailVerificationTable,
+export const email_verificationsRelations = relations(
+	email_verificationsTable,
 	({ one }) => ({
 		user: one(usersTable, {
-			fields: [emailVerificationTable.user_id],
+			fields: [email_verificationsTable.user_id],
 			references: [usersTable.id],
 		}),
 	}),

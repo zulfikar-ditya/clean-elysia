@@ -1,4 +1,4 @@
-import { db, rolePermissionTable, roleTable } from "@postgres/index";
+import { db, role_permissionsTable, rolesTable } from "@postgres/index";
 import { DatatableType, SortDirection } from "../types/datatable";
 import { and, asc, desc, eq, ilike, ne, not, or, SQL } from "drizzle-orm";
 import { defaultSort } from "@default/sort";
@@ -50,7 +50,7 @@ export const RoleRepository = () => {
 
 			let whereCondition: SQL | undefined;
 			if (search) {
-				whereCondition = or(ilike(roleTable.name, `%${search}%`));
+				whereCondition = or(ilike(rolesTable.name, `%${search}%`));
 			}
 
 			let filteredCondition: SQL | undefined = undefined;
@@ -58,7 +58,7 @@ export const RoleRepository = () => {
 				if (filter.name) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(roleTable.name, `%${filter.name.toString()}%`),
+						ilike(rolesTable.name, `%${filter.name.toString()}%`),
 					);
 				}
 			}
@@ -70,10 +70,10 @@ export const RoleRepository = () => {
 
 			const orderColumn = DatatableToolkit.parseSort(
 				{
-					id: roleTable.id,
-					name: roleTable.name,
-					createdAt: roleTable.createdAt,
-					updatedAt: roleTable.updatedAt,
+					id: rolesTable.id,
+					name: rolesTable.name,
+					createdAt: rolesTable.createdAt,
+					updatedAt: rolesTable.updatedAt,
 				},
 				orderBy,
 			);
@@ -93,7 +93,7 @@ export const RoleRepository = () => {
 			});
 
 			const totalCount = await dbInstance.$count(
-				roleTable,
+				rolesTable,
 				finalWhereCondition,
 			);
 
@@ -112,7 +112,7 @@ export const RoleRepository = () => {
 			permission_ids: string[];
 		}): Promise<void> => {
 			const isNameExists = await dbInstance.query.roles.findFirst({
-				where: eq(roleTable.name, data.name),
+				where: eq(rolesTable.name, data.name),
 			});
 
 			if (isNameExists) {
@@ -125,11 +125,11 @@ export const RoleRepository = () => {
 			}
 
 			const role = await dbInstance
-				.insert(roleTable)
+				.insert(rolesTable)
 				.values({
 					name: data.name,
 				})
-				.returning({ id: roleTable.id })
+				.returning({ id: rolesTable.id })
 				.execute();
 
 			if (data.permission_ids.length > 0) {
@@ -138,13 +138,13 @@ export const RoleRepository = () => {
 					permissionId,
 				}));
 
-				await dbInstance.insert(rolePermissionTable).values(rolePermissions);
+				await dbInstance.insert(role_permissionsTable).values(rolePermissions);
 			}
 		},
 
 		getDetail: async (id: string) => {
 			const role = await dbInstance.query.roles.findFirst({
-				where: eq(roleTable.id, id),
+				where: eq(rolesTable.id, id),
 				columns: {
 					id: true,
 					name: true,
@@ -222,7 +222,7 @@ export const RoleRepository = () => {
 			data: { name: string; permission_ids: string[] },
 		): Promise<void> => {
 			const role = await dbInstance.query.roles.findFirst({
-				where: eq(roleTable.id, id),
+				where: eq(rolesTable.id, id),
 			});
 
 			if (!role) {
@@ -230,7 +230,7 @@ export const RoleRepository = () => {
 			}
 
 			const isNameExists = await dbInstance.query.roles.findFirst({
-				where: and(eq(roleTable.name, data.name), not(eq(roleTable.id, id))),
+				where: and(eq(rolesTable.name, data.name), not(eq(rolesTable.id, id))),
 			});
 
 			if (isNameExists) {
@@ -243,16 +243,16 @@ export const RoleRepository = () => {
 			}
 
 			await dbInstance
-				.update(roleTable)
+				.update(rolesTable)
 				.set({
 					name: data.name,
 				})
-				.where(eq(roleTable.id, id))
+				.where(eq(rolesTable.id, id))
 				.execute();
 
 			await dbInstance
-				.delete(rolePermissionTable)
-				.where(eq(rolePermissionTable.roleId, id))
+				.delete(role_permissionsTable)
+				.where(eq(role_permissionsTable.roleId, id))
 				.execute();
 
 			if (data.permission_ids.length > 0) {
@@ -261,13 +261,13 @@ export const RoleRepository = () => {
 					permissionId,
 				}));
 
-				await dbInstance.insert(rolePermissionTable).values(rolePermissions);
+				await dbInstance.insert(role_permissionsTable).values(rolePermissions);
 			}
 		},
 
 		delete: async (id: string): Promise<void> => {
 			const role = await dbInstance.query.roles.findFirst({
-				where: eq(roleTable.id, id),
+				where: eq(rolesTable.id, id),
 			});
 
 			if (!role) {
@@ -275,21 +275,24 @@ export const RoleRepository = () => {
 			}
 
 			await dbInstance
-				.delete(rolePermissionTable)
-				.where(eq(rolePermissionTable.roleId, id))
+				.delete(role_permissionsTable)
+				.where(eq(role_permissionsTable.roleId, id))
 				.execute();
 
-			await dbInstance.delete(roleTable).where(eq(roleTable.id, id)).execute();
+			await dbInstance
+				.delete(rolesTable)
+				.where(eq(rolesTable.id, id))
+				.execute();
 		},
 
 		selectOptions: async (): Promise<{ id: string; name: string }[]> => {
 			const roles = await dbInstance.query.roles.findMany({
-				where: ne(roleTable.name, "superuser"),
+				where: ne(rolesTable.name, "superuser"),
 				columns: {
 					id: true,
 					name: true,
 				},
-				orderBy: asc(roleTable.name),
+				orderBy: asc(rolesTable.name),
 			});
 
 			return roles;
