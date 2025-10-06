@@ -1,4 +1,4 @@
-import { db, permissionTable } from "@postgres/index";
+import { db, permissionsTable } from "@postgres/index";
 import { DatatableType, SortDirection } from "../types/datatable";
 import { defaultSort } from "@default/sort";
 import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";
@@ -47,8 +47,8 @@ export const PermissionRepository = () => {
 
 			if (search) {
 				whereCondition = or(
-					ilike(permissionTable.name, `%${search}%`),
-					ilike(permissionTable.group, `%${search}%`),
+					ilike(permissionsTable.name, `%${search}%`),
+					ilike(permissionsTable.group, `%${search}%`),
 				);
 			}
 
@@ -57,14 +57,14 @@ export const PermissionRepository = () => {
 				if (filter.name) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(permissionTable.name, `%${filter.name.toString()}%`),
+						ilike(permissionsTable.name, `%${filter.name.toString()}%`),
 					);
 				}
 
 				if (filter.group) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(permissionTable.group, `%${filter.group.toString()}%`),
+						ilike(permissionsTable.group, `%${filter.group.toString()}%`),
 					);
 				}
 			}
@@ -75,11 +75,11 @@ export const PermissionRepository = () => {
 			);
 
 			const validateOrderBy = {
-				id: permissionTable.id,
-				name: permissionTable.name,
-				group: permissionTable.group,
-				created_at: permissionTable.createdAt,
-				updated_at: permissionTable.updatedAt,
+				id: permissionsTable.id,
+				name: permissionsTable.name,
+				group: permissionsTable.group,
+				created_at: permissionsTable.createdAt,
+				updated_at: permissionsTable.updatedAt,
 			};
 
 			type OrderableKey = keyof typeof validateOrderBy;
@@ -115,7 +115,7 @@ export const PermissionRepository = () => {
 			}));
 
 			const totalCount = await dbInstance.$count(
-				permissionTable,
+				permissionsTable,
 				finalWhereCondition,
 			);
 
@@ -131,7 +131,7 @@ export const PermissionRepository = () => {
 
 		getDetail: async (id: string): Promise<PermissionList> => {
 			const permission = await dbInstance.query.permissions.findFirst({
-				where: and(eq(permissionTable.id, id)),
+				where: and(eq(permissionsTable.id, id)),
 				columns: {
 					id: true,
 					name: true,
@@ -161,7 +161,7 @@ export const PermissionRepository = () => {
 
 			const existingPermissions = await db.query.permissions.findMany({
 				where: or(
-					...permissionNames.map((name) => ilike(permissionTable.name, name)),
+					...permissionNames.map((name) => ilike(permissionsTable.name, name)),
 				),
 			});
 
@@ -179,7 +179,7 @@ export const PermissionRepository = () => {
 				group: data.group,
 			}));
 
-			await dbInstance.insert(permissionTable).values(insertedData);
+			await dbInstance.insert(permissionsTable).values(insertedData);
 		},
 
 		update: async (
@@ -187,7 +187,7 @@ export const PermissionRepository = () => {
 			data: { name: string; group: string },
 		): Promise<void> => {
 			const permission = await dbInstance.query.permissions.findFirst({
-				where: eq(permissionTable.id, id),
+				where: eq(permissionsTable.id, id),
 			});
 
 			if (!permission) {
@@ -196,11 +196,11 @@ export const PermissionRepository = () => {
 
 			const isPermissionNameAlreadyExist = await dbInstance
 				.select()
-				.from(permissionTable)
+				.from(permissionsTable)
 				.where(
 					and(
-						eq(permissionTable.name, data.name),
-						not(eq(permissionTable.id, id)),
+						eq(permissionsTable.name, data.name),
+						not(eq(permissionsTable.id, id)),
 					),
 				)
 				.limit(1);
@@ -215,17 +215,17 @@ export const PermissionRepository = () => {
 			}
 
 			await dbInstance
-				.update(permissionTable)
+				.update(permissionsTable)
 				.set({
 					name: data.name,
 					group: data.group,
 				})
-				.where(eq(permissionTable.id, id));
+				.where(eq(permissionsTable.id, id));
 		},
 
 		delete: async (id: string): Promise<void> => {
 			const permission = await dbInstance.query.permissions.findFirst({
-				where: eq(permissionTable.id, id),
+				where: eq(permissionsTable.id, id),
 			});
 
 			if (!permission) {
@@ -233,8 +233,8 @@ export const PermissionRepository = () => {
 			}
 
 			await dbInstance
-				.delete(permissionTable)
-				.where(eq(permissionTable.id, id));
+				.delete(permissionsTable)
+				.where(eq(permissionsTable.id, id));
 		},
 
 		selectOptions: async (): Promise<PermissionSelectOptions[]> => {

@@ -7,9 +7,9 @@ import {
 	uuid,
 	varchar,
 } from "drizzle-orm/pg-core";
-import { emailVerificationTable } from "./email_verification";
-import { passwordResetPasswordTable } from "./password_reset_token";
-import { userRolesTable } from "./rbac";
+import { email_verificationsTable } from "./email_verification";
+import { password_reset_tokensTable } from "./password_reset_token";
+import { user_rolesTable } from "./rbac";
 
 export type UserStatusEnum = "active" | "inactive" | "suspended" | "blocked";
 
@@ -46,7 +46,7 @@ export const usersTable = pgTable(
 );
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
-	email_verifications: many(emailVerificationTable),
-	password_reset_tokens: many(passwordResetPasswordTable),
-	user_roles: many(userRolesTable),
+	email_verifications: many(email_verificationsTable),
+	password_reset_tokens: many(password_reset_tokensTable),
+	user_roles: many(user_rolesTable),
 }));

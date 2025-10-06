@@ -10,43 +10,43 @@ import { Pool } from "pg";
 
 // Import all tables
 import {
-	emailVerificationTable,
-	emailVerificationRelations,
+	email_verificationsTable,
+	email_verificationsRelations,
 } from "./email_verification";
 import {
-	passwordResetPasswordTable,
-	passwordResetTokenRelations,
+	password_reset_tokensTable,
+	password_reset_tokensRelations,
 } from "./password_reset_token";
 import {
-	roleTable,
-	permissionTable,
-	rolePermissionTable,
-	userRolesTable,
-	roleRelations,
-	permissionRelations,
-	rolePermissionRelations,
-	userRolesRelations,
+	rolesTable,
+	permissionsTable,
+	role_permissionsTable,
+	user_rolesTable,
+	rolesRelations,
+	permissionsRelations,
+	role_permissionsRelations,
+	user_rolesRelations,
 } from "./rbac";
 import { usersTable, usersRelations } from "./user";
 
 const schema = {
 	// Tables
 	users: usersTable,
-	roles: roleTable,
-	permissions: permissionTable,
-	role_permissions: rolePermissionTable,
-	user_roles: userRolesTable,
-	email_verifications: emailVerificationTable,
-	password_reset_tokens: passwordResetPasswordTable,
+	roles: rolesTable,
+	permissions: permissionsTable,
+	role_permissions: role_permissionsTable,
+	user_roles: user_rolesTable,
+	email_verifications: email_verificationsTable,
+	password_reset_tokens: password_reset_tokensTable,
 
 	// Relations
 	usersRelations,
-	roleRelations,
-	permissionRelations,
-	rolePermissionRelations,
-	userRolesRelations,
-	emailVerificationRelations,
-	passwordResetTokenRelations,
+	rolesRelations,
+	permissionsRelations,
+	role_permissionsRelations,
+	user_rolesRelations,
+	email_verificationsRelations,
+	password_reset_tokensRelations,
 };
 
 const connectionString = process.env.DATABASE_URL!;
@@ -57,10 +57,10 @@ const db = drizzle(client, { schema });
 export {
 	db,
 	usersTable,
-	roleTable,
-	permissionTable,
-	rolePermissionTable,
-	userRolesTable,
-	emailVerificationTable,
-	passwordResetPasswordTable,
+	rolesTable,
+	permissionsTable,
+	role_permissionsTable,
+	user_rolesTable,
+	email_verificationsTable,
+	password_reset_tokensTable,
 };
