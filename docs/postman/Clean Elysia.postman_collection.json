@@ -97,6 +97,50 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"superuser@example.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "forgot-password"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"token\": \"C4xnBbFbe4KY6N7MhMo9dlX5zCvGAv6VR8C5iTTDkkTCUQ0ADhVCJq1sopvFkXcanVp4aIApeRf9WkAsHcd5J7xh8QtbG3klogWiB28IEeyrQUgrOteD8GOuqHbdfpAp0Kh36cdQWaLDga9cJ89ZCjaOSUY8qXjzlDnRfCrwEt9bbI23wklvGDWCFS9wnAgetZZIXne3nsKC9fOPqNGjIPDju7XNwHuSQedBdcC9icFa324ZXIhWL9Szfj5Wzmk\",\r\n    \"password\": \"Password123!\",\r\n    \"password_confirmation\": \"Password123!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/reset-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "reset-password"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -576,10 +620,180 @@
 			]
 		},
 		{
+			"name": "Analityc",
+			"item": [
+				{
+					"name": "Recent Activities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/activities/recent",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "activities", "recent"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recent Activity Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/activities/user/:userId",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "activities", "user", ":userId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "c3390b5f-64ce-4f42-953b-74a673374cfe"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Daily Activity",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/activities/stats/daily",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "activities", "stats", "daily"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Top Activity",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/activities/stats/top-actions",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "activities", "stats", "top-actions"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Auth Recent",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/auth/recent",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "auth", "recent"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/auth/failed-logins",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "auth", "failed-logins"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Auth Stats Hourly",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/auth/stats/hourly",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "auth", "stats", "hourly"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "suspicious IP",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/auth/security/suspicious-ips",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "auth", "security", "suspicious-ips"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "dashboard"]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [""]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [""]
+					}
+				}
+			]
+		},
+		{
 			"name": "Root",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"myname\",\r\n    \"email\": \"email@mail.com\",\r\n    \"name\": \"myname\",\r\n    \"role\": \"seller\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{base_url}}",
 					"host": ["{{base_url}}"]

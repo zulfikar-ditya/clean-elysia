@@ -9,12 +9,30 @@ import { UnprocessableEntityError } from "../errors";
 import { UserInformation } from "../types/UserInformation";
 import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
 import { passwordResetPasswordTable } from "../../../packages/db/postgres/password_reset_token";
+import { createUserActivitiesService } from "packages/db/clickhouse";
+
+// Create instance at module level
+const userActivitiesService = createUserActivitiesService();
 
 export const AuthService = {
-	async login(email: string, password: string): Promise<UserInformation> {
+	async login(
+		email: string,
+		password: string,
+		ipAddress: string,
+		userAgent: string,
+	): Promise<UserInformation> {
 		const user = await UserRepository().findByEmail(email);
 
 		if (user.email_verified_at === null) {
+			await userActivitiesService.trackActivity({
+				user_id: user.id,
+				action: "failed_login",
+				resource: "auth/login",
+				ip_address: ipAddress,
+				metadata: { reason: "email not verified" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "email",
@@ -24,6 +42,15 @@ export const AuthService = {
 		}
 
 		if (user.status !== "active") {
+			await userActivitiesService.trackActivity({
+				user_id: user.id,
+				action: "failed_login",
+				resource: "auth/login",
+				ip_address: ipAddress,
+				metadata: { reason: "account not active" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "email",
@@ -34,6 +61,15 @@ export const AuthService = {
 
 		const isPasswordValid = await Hash.compareHash(password, user.password);
 		if (!isPasswordValid) {
+			await userActivitiesService.trackActivity({
+				user_id: user.id,
+				action: "failed_login",
+				resource: "auth/login",
+				ip_address: ipAddress,
+				metadata: { reason: "invalid password" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "email",
@@ -42,14 +78,28 @@ export const AuthService = {
 			]);
 		}
 
+		// Track successful login
+		await userActivitiesService.trackActivity({
+			user_id: user.id,
+			action: "login",
+			resource: "auth/login",
+			ip_address: ipAddress,
+			metadata: { status: "success" },
+			user_agent: userAgent,
+		});
+
 		return await UserRepository().UserInformation(user.id);
 	},
 
-	async register(data: {
-		name: string;
-		email: string;
-		password: string;
-	}): Promise<void> {
+	async register(
+		data: {
+			name: string;
+			email: string;
+			password: string;
+		},
+		ipAddress: string,
+		userAgent: string,
+	): Promise<void> {
 		const user = await UserRepository().db.query.users.findFirst({
 			where: and(
 				eq(usersTable.email, data.email),
@@ -57,6 +107,15 @@ export const AuthService = {
 			),
 		});
 		if (user) {
+			await userActivitiesService.trackActivity({
+				user_id: user.id,
+				action: "failed_register",
+				resource: "auth/register",
+				ip_address: ipAddress,
+				metadata: { reason: "email already exists" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "email",
@@ -98,13 +157,26 @@ export const AuthService = {
 		});
 	},
 
-	async resentVerificationEmail(email: string): Promise<void> {
+	async resentVerificationEmail(
+		email: string,
+		ipAddress: string,
+		userAgent: string,
+	): Promise<void> {
 		const user = await UserRepository().findByEmail(email);
 		if (!user) {
 			return;
 		}
 
 		if (user.email_verified_at) {
+			await userActivitiesService.trackActivity({
+				user_id: user.id,
+				action: "resent_verification_email",
+				resource: "auth/resent-verification-email",
+				ip_address: ipAddress,
+				metadata: { reason: "email already verified" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "email",
@@ -140,7 +212,7 @@ export const AuthService = {
 		return;
 	},
 
-	async verifyEmail(token: string) {
+	async verifyEmail(token: string, ipAddress: string, userAgent: string) {
 		const emailVerification = await db
 			.select()
 			.from(emailVerificationTable)
@@ -148,6 +220,15 @@ export const AuthService = {
 			.limit(1);
 
 		if (emailVerification.length === 0) {
+			await userActivitiesService.trackActivity({
+				user_id: "unknown",
+				action: "verify_email",
+				resource: "auth/verify-email",
+				ip_address: ipAddress,
+				metadata: { reason: "invalid or expired token" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "token",
@@ -161,6 +242,15 @@ export const AuthService = {
 		);
 		const now = DateToolkit.now();
 		if (DateToolkit.isBefore(tokenExpiredAt, now)) {
+			await userActivitiesService.trackActivity({
+				user_id: emailVerification[0].user_id,
+				action: "verify_email",
+				resource: "auth/verify-email",
+				ip_address: ipAddress,
+				metadata: { reason: "invalid or expired token" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "token",
@@ -182,9 +272,22 @@ export const AuthService = {
 		});
 	},
 
-	async forgotPassword(email: string): Promise<void> {
+	async forgotPassword(
+		email: string,
+		ipAddress: string,
+		userAgent: string,
+	): Promise<void> {
 		const user = await UserRepository().findByEmail(email);
 		if (!user) {
+			await userActivitiesService.trackActivity({
+				user_id: "unknown",
+				action: "forgot_password",
+				resource: "auth/forgot-password",
+				ip_address: ipAddress,
+				metadata: { reason: "user not found", email },
+				user_agent: userAgent,
+			});
+
 			return;
 		}
 
@@ -207,9 +310,23 @@ export const AuthService = {
 		});
 	},
 
-	async resetPassword(token: string, newPassword: string): Promise<void> {
+	async resetPassword(
+		token: string,
+		newPassword: string,
+		ipAddress: string,
+		userAgent: string,
+	): Promise<void> {
 		const passwordReset = await ForgotPasswordRepository().findByToken(token);
 		if (!passwordReset) {
+			await userActivitiesService.trackActivity({
+				user_id: "unknown",
+				action: "reset_password",
+				resource: "auth/reset-password",
+				ip_address: ipAddress,
+				metadata: { reason: "invalid or expired token" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "token",
@@ -222,6 +339,15 @@ export const AuthService = {
 			where: eq(usersTable.id, passwordReset.user_id),
 		});
 		if (!user) {
+			await userActivitiesService.trackActivity({
+				user_id: passwordReset.user_id,
+				action: "reset_password",
+				resource: "auth/reset-password",
+				ip_address: ipAddress,
+				metadata: { reason: "user not found" },
+				user_agent: userAgent,
+			});
+
 			throw new UnprocessableEntityError("Validation error", [
 				{
 					field: "token",

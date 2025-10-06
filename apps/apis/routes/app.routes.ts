@@ -3,6 +3,7 @@ import { HomeHandler } from "@apis/handlers/home.handler";
 import { authRoutes } from "./auth.routes";
 import { profileRoutes } from "./profile.routes";
 import { settingRoutes } from "./setting.routes";
+import { analyticsRoutes } from "./analytics.routes";
 
 const routes = new Elysia();
 
@@ -12,5 +13,6 @@ routes.get("/health", HomeHandler.health);
 routes.use(authRoutes);
 routes.use(profileRoutes);
 routes.use(settingRoutes);
+routes.use(analyticsRoutes);
 
 export default routes;

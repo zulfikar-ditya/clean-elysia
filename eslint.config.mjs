@@ -6,7 +6,14 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
 	{
-		ignores: ["eslint.config.mjs", "dist/**/*"],
+		ignores: [
+			"eslint.config.mjs",
+			"dist/**/*",
+			"**/*.interface.ts",
+			"**/interface/**/*",
+			"**/interfaces/**/*",
+			"/packages/db/clickhouse/repositories/interfaces/*.ts",
+		],
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,
