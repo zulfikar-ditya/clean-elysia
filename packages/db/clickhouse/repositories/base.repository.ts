@@ -1,41 +1,45 @@
 import { ClickHouseClient } from "@clickhouse/client";
-import { getClickHouseClient } from "../client";
+import { ClickHouseClientManager } from "../client/clickhouse-client";
 
 export class BaseRepository {
-	private client: ClickHouseClient | null = null;
+	protected client: ClickHouseClient;
 
 	constructor() {
-		if (!this.client) {
-			this.client = getClickHouseClient();
+		this.client = ClickHouseClientManager.getInstance();
+	}
+
+	protected async query<T>(
+		query: string,
+		params?: Record<string, unknown>,
+	): Promise<T[]> {
+		try {
+			const resultSet = await this.client.query({
+				query,
+				query_params: params,
+				format: "JSONEachRow",
+			});
+
+			return await resultSet.json<T>();
+		} catch (error) {
+			throw new Error(`Database query failed`, { cause: error });
+		}
+	}
+
+	protected async insert<T>(table: string, values: T[]): Promise<void> {
+		try {
+			await this.client.insert({
+				table,
+				values,
+				format: "JSONEachRow",
+			});
+		} catch (error) {
+			throw new Error(`Database insert failed`, {
+				cause: error,
+			});
 		}
 	}
 
 	protected getClient(): ClickHouseClient {
-		if (!this.client) {
-			this.client = getClickHouseClient();
-		}
 		return this.client;
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	static async query<T = any>(
-		sql: string,
-		params?: Record<string, unknown>,
-	): Promise<T[]> {
-		const ch = getClickHouseClient();
-		const resultSet = await ch.query({
-			query: sql,
-			query_params: params,
-			format: "JSONEachRow",
-		});
-		return await resultSet.json<T>();
-	}
-
-	static async exec(
-		sql: string,
-		params?: Record<string, unknown>,
-	): Promise<void> {
-		const ch = getClickHouseClient();
-		await ch.exec({ query: sql, query_params: params });
 	}
 }

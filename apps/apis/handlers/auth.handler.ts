@@ -48,9 +48,18 @@ export const AuthHandler = {
 			data: payload,
 		});
 
+		// Extract IP address and user agent
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
 		const user: UserInformation = await AuthService.login(
 			validation.email,
 			validation.password,
+			ipAddress,
+			userAgent,
 		);
 
 		const cacheKey = UserInformationCacheKey(user.id);
@@ -87,7 +96,13 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		await AuthService.register(validate);
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
+		await AuthService.register(validate, ipAddress, userAgent);
 
 		return ResponseToolkit.success(
 			ctx,
@@ -107,7 +122,17 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		await AuthService.resentVerificationEmail(validate.email);
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
+		await AuthService.resentVerificationEmail(
+			validate.email,
+			ipAddress,
+			userAgent,
+		);
 
 		return ResponseToolkit.success(ctx, {}, "Verification email sent", 200);
 	},
@@ -122,7 +147,13 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		await AuthService.verifyEmail(validate.token);
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
+		await AuthService.verifyEmail(validate.token, ipAddress, userAgent);
 
 		return ResponseToolkit.success(ctx, {}, "Email verified successfully", 200);
 	},
@@ -137,7 +168,13 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		await AuthService.forgotPassword(validate.email);
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
+		await AuthService.forgotPassword(validate.email, ipAddress, userAgent);
 
 		return ResponseToolkit.success(ctx, {}, "Password reset email sent", 200);
 	},
@@ -153,7 +190,18 @@ export const AuthHandler = {
 			data: payload,
 		});
 
-		await AuthService.resetPassword(validate.token, validate.password);
+		const ipAddress =
+			ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+			ctx.request.headers.get("x-real-ip") ||
+			"unknown";
+		const userAgent = ctx.request.headers.get("user-agent") || "unknown";
+
+		await AuthService.resetPassword(
+			validate.token,
+			validate.password,
+			ipAddress,
+			userAgent,
+		);
 
 		return ResponseToolkit.success(ctx, {}, "Password reset successfully", 200);
 	},
