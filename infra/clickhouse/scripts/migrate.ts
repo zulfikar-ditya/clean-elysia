@@ -1,5 +1,5 @@
 import { createClient } from "@clickhouse/client";
-import { clickhouseConfig } from "@packages_config/*";
+import { clickhouseConfig } from "@config";
 import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 
