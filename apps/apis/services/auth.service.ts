@@ -2,17 +2,18 @@ import {
 	db,
 	email_verificationsTable,
 	password_reset_tokensTable,
-} from "@postgres/index";
-import { usersTable } from "@postgres/user";
+} from "infra/postgres/index";
+import { usersTable } from "infra/postgres/user";
 import { Hash } from "@security/hash";
 import { and, eq, isNull } from "drizzle-orm";
 import { ForgotPasswordRepository, UserRepository } from "../repositories";
 import { StrToolkit } from "@toolkit/string";
-import { AppConfig, verificationTokenLifetime, DateToolkit } from "@packages/*";
+import { verificationTokenLifetime, DateToolkit } from "@packages/*";
 import { UnprocessableEntityError } from "../errors";
 import { UserInformation } from "../types/UserInformation";
 import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
-import { createUserActivitiesService } from "packages/db/clickhouse";
+import { createUserActivitiesService } from "infra/clickhouse";
+import { AppConfig } from "config/app.config";
 
 // Create instance at module level
 const userActivitiesService = createUserActivitiesService();

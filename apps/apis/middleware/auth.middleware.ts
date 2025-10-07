@@ -1,7 +1,7 @@
 import { AppContext } from "@apis/types/elysia";
 import { UnauthorizedError } from "@apis/errors";
 import { UserRepository } from "@apis/repositories";
-import { Cache } from "@packages_cache/*";
+import { Cache } from "@cache/index";
 import { UserInformation } from "../types/UserInformation";
 
 export const authMiddleware = async (ctx: AppContext) => {

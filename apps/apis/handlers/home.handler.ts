@@ -1,4 +1,4 @@
-import { AppConfig } from "@packages_config/*";
+import { AppConfig } from "@config";
 import { DateToolkit, ResponseToolkit } from "@toolkit";
 import { Context } from "elysia";
 

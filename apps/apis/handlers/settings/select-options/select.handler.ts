@@ -1,6 +1,6 @@
 import { RoleRepository } from "@app/apis/repositories/role.repository";
 import { AppContext } from "@app/apis/types/elysia";
-import { db } from "@postgres/index";
+import { db } from "infra/postgres/index";
 import { ResponseToolkit } from "@toolkit/response";
 
 export const SettingSelectHandler = {

@@ -38,15 +38,18 @@
 			"@packages/*": ["packages"],
 			"@packages": ["packages/index.ts"],
 
-			"@packages_config/*": ["packages/config"],
-			"@packages_config": ["packages/config/index.ts"],
+			"@config/*": ["config"],
+			"@config": ["config/index.ts"],
 
-			"@packages_db/*": ["packages/db"],
-			"@packages_cache/*": ["packages/cache"],
-			"@packages_event/*": ["packages/event"],
+			"@infra/*": ["infra"],
+			"@infra": ["infra/index.ts"],
 
-			"@postgres/*": ["packages/db/postgres/*"],
-			"@postgres": ["packages/db/postgres/index.ts"],
+			"@db/*": ["infra/db"],
+			"@cache/*": ["packages/cache"],
+			"@event/*": ["packages/event"],
+
+			"@postgres/*": ["infra/postgres/*"],
+			"@postgres": ["infra/postgres/index.ts"],
 
 			"@toolkit/*": ["packages/toolkit/*"],
 			"@toolkit": ["packages/toolkit/index.ts"],
@@ -130,6 +133,12 @@
 		// "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */
 	},
-	"include": ["apps/**/*", "infra/**/*", "packages/**/*", "drizzle.config.ts"],
+	"include": [
+		"apps/**/*",
+		"infra/**/*",
+		"packages/**/*",
+		"drizzle.config.ts",
+		"config"
+	],
 	"exclude": ["node_modules", "dist"]
 }

@@ -1,4 +1,4 @@
-import { db, permissionsTable } from "@postgres/index";
+import { db, permissionsTable } from "infra/postgres/index";
 import { DatatableType, SortDirection } from "../types/datatable";
 import { defaultSort } from "@default/sort";
 import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";

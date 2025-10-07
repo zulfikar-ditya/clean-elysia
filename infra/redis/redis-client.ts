@@ -1,4 +1,4 @@
-import { RedisConfig } from "@packages_config/*";
+import { RedisConfig } from "@config";
 import Redis from "ioredis";
 
 export class RedisClient {

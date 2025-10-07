@@ -1,8 +1,8 @@
-import { db, usersTable } from "@postgres";
+import { db, usersTable } from "infra/postgres";
 import { eq, ne, and } from "drizzle-orm";
 import { Hash } from "@security/hash";
 import { UnauthorizedError, UnprocessableEntityError } from "../errors";
-import { Cache, UserInformationCacheKey } from "@packages_cache/*";
+import { Cache, UserInformationCacheKey } from "@cache/index";
 import { UserRepository } from "../repositories";
 import { UserInformation } from "../types/UserInformation";
 

@@ -1,6 +1,6 @@
 import { AppContext } from "@app/apis/types/elysia";
 import { StrongPassword } from "@default/strong-password";
-import { db, user_rolesTable, usersTable } from "@postgres/index";
+import { db, user_rolesTable, usersTable } from "infra/postgres/index";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
 import { and, eq, isNull, not } from "drizzle-orm";

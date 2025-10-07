@@ -1,4 +1,4 @@
-import { MailConfig } from "@packages_config/*";
+import { MailConfig } from "@config";
 import nodemailer from "nodemailer";
 
 const transport = nodemailer.createTransport(MailConfig);

@@ -1,6 +1,7 @@
 import cors from "@elysiajs/cors";
 import jwt from "@elysiajs/jwt";
-import { AppConfig, CORSConfig, LoggerPlugin } from "@packages";
+import { AppConfig, CORSConfig } from "@config";
+import { LoggerPlugin } from "@packages";
 import type { Elysia } from "elysia";
 
 export const setupMiddlewares = (app: Elysia) =>
