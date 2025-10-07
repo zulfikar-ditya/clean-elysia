@@ -95,11 +95,11 @@ jobs:
         env:
           CLICKHOUSE_URL: http://app:secret@localhost:8123
         run: bun run infra/clickhouse/scripts/migrate.ts migrate
-
+        
       - name: Clickhouse Status
-        env:
-          CLICKHOUSE_URL: http://app:secret@clickhouse:8123
-        run: npx drizzle-kit status:clickhouse --config=drizzle.config.ts
+      env:
+        CLICKHOUSE_URL: http://app:secret@clickhouse:8123
+        run: bun run infra/clickhouse/scripts/migrate.ts status
 
       - name: Build
         run: bun run build:all
