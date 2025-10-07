@@ -1,4 +1,9 @@
-import { db, roleTable, userRolesTable, usersTable } from "@postgres/index";
+import {
+	db,
+	rolesTable,
+	user_rolesTable,
+	usersTable,
+} from "infra/postgres/index";
 import { Hash } from "@security/hash";
 import { eq } from "drizzle-orm";
 
@@ -33,24 +38,24 @@ export const UserSeeder = async () => {
 		// assign role
 		const superUserRole = await tx
 			.select()
-			.from(roleTable)
-			.where(eq(roleTable.name, "superuser"))
+			.from(rolesTable)
+			.where(eq(rolesTable.name, "superuser"))
 			.limit(1);
 		const adminRole = await tx
 			.select()
-			.from(roleTable)
-			.where(eq(roleTable.name, "admin"))
+			.from(rolesTable)
+			.where(eq(rolesTable.name, "admin"))
 			.limit(1);
 
 		if (superUserRole.at(0) && superUser.at(0)) {
-			await tx.insert(userRolesTable).values({
+			await tx.insert(user_rolesTable).values({
 				userId: superUser.at(0)!.id,
 				roleId: superUserRole.at(0)!.id,
 			});
 		}
 
 		if (adminRole.at(0) && admin.at(0)) {
-			await tx.insert(userRolesTable).values({
+			await tx.insert(user_rolesTable).values({
 				userId: admin.at(0)!.id,
 				roleId: adminRole.at(0)!.id,
 			});

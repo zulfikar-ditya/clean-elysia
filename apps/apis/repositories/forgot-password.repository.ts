@@ -1,4 +1,4 @@
-import { db, password_reset_tokensTable } from "@postgres/index";
+import { db, password_reset_tokensTable } from "infra/postgres/index";
 import { eq } from "drizzle-orm";
 
 export const ForgotPasswordRepository = () => {

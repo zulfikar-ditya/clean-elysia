@@ -1,4 +1,4 @@
-import { db, user_rolesTable, usersTable } from "@postgres/index";
+import { db, user_rolesTable, usersTable } from "infra/postgres/index";
 import { UserInformation } from "@apis/types/UserInformation";
 import {
 	and,
@@ -14,7 +14,7 @@ import {
 import { UnauthorizedError, UnprocessableEntityError } from "../errors";
 import { DatatableType, SortDirection } from "../types/datatable";
 import { PaginationResponse } from "../types/pagination";
-import { UserStatusEnum } from "../../../packages/db/postgres/user";
+import { UserStatusEnum } from "../../../infra/postgres/user";
 import { defaultSort } from "@default/sort";
 import { Hash } from "@security/hash";
 import { NotFoundError } from "../errors/not-found-error";

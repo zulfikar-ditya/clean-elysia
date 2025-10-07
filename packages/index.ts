@@ -2,11 +2,8 @@
 export * from "./logger/logger";
 export * from "./mail/mail.service";
 
-// config -------------------------
-export * from "./config/index";
-
 // db -------------------------
-export * from "./db/postgres/index";
+export * from "../infra/postgres/index";
 
 // event -------------------------
 

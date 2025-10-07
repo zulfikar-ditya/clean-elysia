@@ -3,7 +3,7 @@ import vine from "@vinejs/vine";
 import { UserInformation } from "@apis/types/UserInformation";
 import { AppContext } from "@apis/types/elysia";
 import { StrongPassword } from "@default/strong-password";
-import { Cache, UserInformationCacheKey } from "@packages_cache/*";
+import { Cache, UserInformationCacheKey } from "@cache/index";
 import { AuthService } from "../services/auth.service";
 
 const AuthSchema = {

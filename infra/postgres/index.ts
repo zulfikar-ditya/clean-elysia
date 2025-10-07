@@ -4,7 +4,6 @@ export * from "./password_reset_token";
 export * from "./rbac";
 export * from "./user";
 
-import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
@@ -28,6 +27,7 @@ import {
 	user_rolesRelations,
 } from "./rbac";
 import { usersTable, usersRelations } from "./user";
+import { DatabaseConfig } from "config/database.config";
 
 const schema = {
 	// Tables
@@ -49,7 +49,7 @@ const schema = {
 	password_reset_tokensRelations,
 };
 
-const connectionString = process.env.DATABASE_URL!;
+const connectionString = DatabaseConfig.url;
 const client = new Pool({ connectionString });
 
 const db = drizzle(client, { schema });

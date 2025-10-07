@@ -8,28 +8,7 @@ on:
       - "feat/**"
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies (Bun)
-        run: bun install
-
-      - name: Lint (Bun)
-        run: bun run lint
-
-      - name: Format Check (Bun)
-        run: bun run format
-
-  build:
+  build-and-lint:
     runs-on: ubuntu-latest
 
     services:
@@ -47,6 +26,34 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      clickhouse:
+        image: clickhouse/clickhouse-server:23.12
+        ports:
+          - 8123:8123
+          - 9000:9000
+        env:
+          CLICKHOUSE_DB: app
+          CLICKHOUSE_USER: app
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+          CLICKHOUSE_PASSWORD: secret
+        options: >-
+          --health-cmd="clickhouse-client --query 'SELECT 1'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      # redis:
+      #   image: redis:7-alpine
+      #   ports:
+      #     - 6379:6379
+      #   options: >-
+      #     --health-cmd="redis-cli ping"
+      #     --health-interval=10s
+      #     --health-timeout=5s
+      #     --health-retries=5
+      #   env:
+      #     REDIS_PASSWORD: password123
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,25 +68,44 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install drizzle-kit (Node + npx)
-        run: npm install drizzle-kit
-
       - name: Install dependencies (Bun)
         run: bun install
 
-      - name: Drizzle Generate (Node + npx)
+      - name: Install drizzle-kit (Node + npx)
+        run: npm install drizzle-kit
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format Check
+        run: bun run format
+
+      - name: Drizzle Generate
         run: npx drizzle-kit generate --config=drizzle.config.ts
 
-      - name: Drizzle Migrate (Node + npx)
+      - name: Drizzle Migrate
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_db
+          # REDIS_HOST: localhost
+          # REDIS_PORT: 6379
+          # REDIS_PASSWORD: password123
         run: npx drizzle-kit migrate --config=drizzle.config.ts
 
-      - name: Build (Bun)
+      - name: Clickhouse Migrate
+        env:
+          CLICKHOUSE_URL: http://app:secret@localhost:8123
+        run: bun run infra/clickhouse/scripts/migrate.ts migrate
+        
+      - name: Clickhouse Status
+      env:
+        CLICKHOUSE_URL: http://app:secret@clickhouse:8123
+        run: bun run infra/clickhouse/scripts/migrate.ts status
+
+      - name: Build
         run: bun run build:all
 
   docker-compose-up:
-    needs: build
+    needs: build-and-lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -101,6 +127,3 @@ jobs:
           docker-compose ps
           sleep 20
           docker-compose ps
-
-      - name: Show logs (optional)
-        run: docker-compose logs --tail=50

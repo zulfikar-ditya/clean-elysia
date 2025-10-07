@@ -4,4 +4,8 @@
 bun install
 bun run format
 bun run lint
+
+make db-generate
+make db-migrate
+
 bun run build:all
