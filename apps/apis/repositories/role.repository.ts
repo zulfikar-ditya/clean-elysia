@@ -6,6 +6,7 @@ import { DatatableToolkit } from "@toolkit/datatable";
 import { PaginationResponse } from "../types/pagination";
 import { UnprocessableEntityError } from "../errors";
 import { NotFoundError } from "../errors/not-found-error";
+import { DbTransaction } from ".";
 
 export type RoleList = {
 	id: string;
@@ -34,9 +35,14 @@ export const RoleRepository = () => {
 
 	return {
 		db: dbInstance,
+		getDb: (tx?: DbTransaction) => tx || dbInstance.$cache,
+
 		findAll: async (
 			queryParam: DatatableType,
+			tx?: DbTransaction,
 		): Promise<PaginationResponse<RoleList>> => {
+			const database = tx || dbInstance;
+
 			const page: number = queryParam.page || 1;
 			const limit: number = queryParam.limit || 10;
 			const search: string | null = queryParam.search || null;
@@ -78,7 +84,7 @@ export const RoleRepository = () => {
 				orderBy,
 			);
 
-			const roles = await dbInstance.query.roles.findMany({
+			const roles = await database.query.roles.findMany({
 				where: finalWhereCondition,
 				orderBy:
 					orderDirection === "asc" ? asc(orderColumn) : desc(orderColumn),
@@ -92,10 +98,7 @@ export const RoleRepository = () => {
 				offset,
 			});
 
-			const totalCount = await dbInstance.$count(
-				rolesTable,
-				finalWhereCondition,
-			);
+			const totalCount = await database.$count(rolesTable, finalWhereCondition);
 
 			return {
 				data: roles,
@@ -107,11 +110,16 @@ export const RoleRepository = () => {
 			};
 		},
 
-		create: async (data: {
-			name: string;
-			permission_ids: string[];
-		}): Promise<void> => {
-			const isNameExists = await dbInstance.query.roles.findFirst({
+		create: async (
+			data: {
+				name: string;
+				permission_ids: string[];
+			},
+			tx?: DbTransaction,
+		): Promise<void> => {
+			const database = tx || dbInstance;
+
+			const isNameExists = await database.query.roles.findFirst({
 				where: eq(rolesTable.name, data.name),
 			});
 
@@ -124,7 +132,7 @@ export const RoleRepository = () => {
 				]);
 			}
 
-			const role = await dbInstance
+			const role = await database
 				.insert(rolesTable)
 				.values({
 					name: data.name,
@@ -142,8 +150,10 @@ export const RoleRepository = () => {
 			}
 		},
 
-		getDetail: async (id: string) => {
-			const role = await dbInstance.query.roles.findFirst({
+		getDetail: async (id: string, tx?: DbTransaction) => {
+			const database = tx || dbInstance;
+
+			const role = await database.query.roles.findFirst({
 				where: eq(rolesTable.id, id),
 				columns: {
 					id: true,
@@ -171,7 +181,7 @@ export const RoleRepository = () => {
 				throw new NotFoundError("Role not found");
 			}
 
-			const allPermissions = await dbInstance.query.permissions.findMany({
+			const allPermissions = await database.query.permissions.findMany({
 				columns: {
 					id: true,
 					name: true,
@@ -220,8 +230,11 @@ export const RoleRepository = () => {
 		update: async (
 			id: string,
 			data: { name: string; permission_ids: string[] },
+			tx?: DbTransaction,
 		): Promise<void> => {
-			const role = await dbInstance.query.roles.findFirst({
+			const database = tx || dbInstance;
+
+			const role = await database.query.roles.findFirst({
 				where: eq(rolesTable.id, id),
 			});
 
@@ -229,7 +242,7 @@ export const RoleRepository = () => {
 				throw new NotFoundError("Role not found");
 			}
 
-			const isNameExists = await dbInstance.query.roles.findFirst({
+			const isNameExists = await database.query.roles.findFirst({
 				where: and(eq(rolesTable.name, data.name), not(eq(rolesTable.id, id))),
 			});
 
@@ -242,7 +255,7 @@ export const RoleRepository = () => {
 				]);
 			}
 
-			await dbInstance
+			await database
 				.update(rolesTable)
 				.set({
 					name: data.name,
@@ -250,7 +263,7 @@ export const RoleRepository = () => {
 				.where(eq(rolesTable.id, id))
 				.execute();
 
-			await dbInstance
+			await database
 				.delete(role_permissionsTable)
 				.where(eq(role_permissionsTable.roleId, id))
 				.execute();
@@ -261,12 +274,14 @@ export const RoleRepository = () => {
 					permissionId,
 				}));
 
-				await dbInstance.insert(role_permissionsTable).values(rolePermissions);
+				await database.insert(role_permissionsTable).values(rolePermissions);
 			}
 		},
 
-		delete: async (id: string): Promise<void> => {
-			const role = await dbInstance.query.roles.findFirst({
+		delete: async (id: string, tx?: DbTransaction): Promise<void> => {
+			const database = tx || dbInstance;
+
+			const role = await database.query.roles.findFirst({
 				where: eq(rolesTable.id, id),
 			});
 
@@ -274,15 +289,12 @@ export const RoleRepository = () => {
 				throw new NotFoundError("Role not found");
 			}
 
-			await dbInstance
+			await database
 				.delete(role_permissionsTable)
 				.where(eq(role_permissionsTable.roleId, id))
 				.execute();
 
-			await dbInstance
-				.delete(rolesTable)
-				.where(eq(rolesTable.id, id))
-				.execute();
+			await database.delete(rolesTable).where(eq(rolesTable.id, id)).execute();
 		},
 
 		selectOptions: async (): Promise<{ id: string; name: string }[]> => {

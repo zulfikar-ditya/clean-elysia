@@ -1,5 +1,6 @@
 import { RoleRepository } from "@app/apis/repositories/role.repository";
 import { AppContext } from "@app/apis/types/elysia";
+import { db } from "@postgres/index";
 import { DatatableToolkit } from "@toolkit/datatable";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
@@ -42,7 +43,9 @@ export const RoleHandler = {
 			data: payload,
 		});
 
-		await RoleRepository().create(validate);
+		await db.transaction(async (tx) => {
+			await RoleRepository().create(validate, tx);
+		});
 
 		return ResponseToolkit.success(ctx, {}, "Success create new role", 200);
 	},
@@ -66,6 +69,10 @@ export const RoleHandler = {
 			data: payload,
 		});
 
+		await db.transaction(async (tx) => {
+			await RoleRepository().update(roleId, validate, tx);
+		});
+
 		await RoleRepository().update(roleId, validate);
 
 		return ResponseToolkit.success(ctx, {}, "Success update role", 200);
@@ -73,7 +80,10 @@ export const RoleHandler = {
 
 	delete: async (ctx: AppContext) => {
 		const roleId = ctx.params.id;
-		await RoleRepository().delete(roleId);
+
+		await db.transaction(async (tx) => {
+			await RoleRepository().delete(roleId, tx);
+		});
 
 		return ResponseToolkit.success(ctx, {}, "Success delete role", 200);
 	},
