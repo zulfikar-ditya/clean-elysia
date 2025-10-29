@@ -5,6 +5,7 @@ import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";
 import { PaginationResponse } from "../types/pagination";
 import { NotFoundError } from "../errors/not-found-error";
 import { UnprocessableEntityError } from "../errors";
+import { DbTransaction } from ".";
 
 export type PermissionList = {
 	id: string;
@@ -28,10 +29,14 @@ export const PermissionRepository = () => {
 
 	return {
 		db: dbInstance,
+		getDb: (tx?: DbTransaction) => tx || dbInstance.$cache,
 
 		findAll: async (
 			queryParam: DatatableType,
+			tx?: DbTransaction,
 		): Promise<PaginationResponse<PermissionList>> => {
+			const database = tx || dbInstance;
+
 			const page: number = queryParam.page || 1;
 			const limit: number = queryParam.limit || 10;
 			const search: string | null = queryParam.search || null;
@@ -91,7 +96,7 @@ export const PermissionRepository = () => {
 
 			const orderColumn = validateOrderBy[normalizedOrderBy];
 
-			const rawData = await dbInstance.query.permissions.findMany({
+			const rawData = await database.query.permissions.findMany({
 				where: finalWhereCondition,
 				orderBy:
 					orderDirection === "asc" ? asc(orderColumn) : desc(orderColumn),
@@ -114,7 +119,7 @@ export const PermissionRepository = () => {
 				updated_at: item.updatedAt,
 			}));
 
-			const totalCount = await dbInstance.$count(
+			const totalCount = await database.$count(
 				permissionsTable,
 				finalWhereCondition,
 			);
@@ -129,8 +134,12 @@ export const PermissionRepository = () => {
 			};
 		},
 
-		getDetail: async (id: string): Promise<PermissionList> => {
-			const permission = await dbInstance.query.permissions.findFirst({
+		getDetail: async (
+			id: string,
+			tx?: DbTransaction,
+		): Promise<PermissionList> => {
+			const database = tx || dbInstance;
+			const permission = await database.query.permissions.findFirst({
 				where: and(eq(permissionsTable.id, id)),
 				columns: {
 					id: true,
@@ -154,12 +163,16 @@ export const PermissionRepository = () => {
 			};
 		},
 
-		create: async (data: { name: string[]; group: string }): Promise<void> => {
+		create: async (
+			data: { name: string[]; group: string },
+			tx?: DbTransaction,
+		): Promise<void> => {
+			const database = tx || dbInstance;
 			const permissionNames: string[] = data.name.map(
 				(name) => `${data.group} ${name}`,
 			);
 
-			const existingPermissions = await db.query.permissions.findMany({
+			const existingPermissions = await database.query.permissions.findMany({
 				where: or(
 					...permissionNames.map((name) => ilike(permissionsTable.name, name)),
 				),
@@ -179,14 +192,16 @@ export const PermissionRepository = () => {
 				group: data.group,
 			}));
 
-			await dbInstance.insert(permissionsTable).values(insertedData);
+			await database.insert(permissionsTable).values(insertedData);
 		},
 
 		update: async (
 			id: string,
 			data: { name: string; group: string },
+			tx?: DbTransaction,
 		): Promise<void> => {
-			const permission = await dbInstance.query.permissions.findFirst({
+			const database = tx || dbInstance;
+			const permission = await database.query.permissions.findFirst({
 				where: eq(permissionsTable.id, id),
 			});
 
@@ -194,7 +209,7 @@ export const PermissionRepository = () => {
 				throw new NotFoundError("Permission not found");
 			}
 
-			const isPermissionNameAlreadyExist = await dbInstance
+			const isPermissionNameAlreadyExist = await database
 				.select()
 				.from(permissionsTable)
 				.where(
@@ -214,7 +229,7 @@ export const PermissionRepository = () => {
 				]);
 			}
 
-			await dbInstance
+			await database
 				.update(permissionsTable)
 				.set({
 					name: data.name,
@@ -223,8 +238,9 @@ export const PermissionRepository = () => {
 				.where(eq(permissionsTable.id, id));
 		},
 
-		delete: async (id: string): Promise<void> => {
-			const permission = await dbInstance.query.permissions.findFirst({
+		delete: async (id: string, tx?: DbTransaction): Promise<void> => {
+			const database = tx || dbInstance;
+			const permission = await database.query.permissions.findFirst({
 				where: eq(permissionsTable.id, id),
 			});
 
@@ -232,13 +248,16 @@ export const PermissionRepository = () => {
 				throw new NotFoundError("Permission not found");
 			}
 
-			await dbInstance
+			await database
 				.delete(permissionsTable)
 				.where(eq(permissionsTable.id, id));
 		},
 
-		selectOptions: async (): Promise<PermissionSelectOptions[]> => {
-			const dataPermissions = await db.query.permissions.findMany({
+		selectOptions: async (
+			tx?: DbTransaction,
+		): Promise<PermissionSelectOptions[]> => {
+			const database = tx || dbInstance;
+			const dataPermissions = await database.query.permissions.findMany({
 				columns: { id: true, name: true, group: true },
 			});
 			const grouped: Record<string, PermissionSelectOptions["permissions"]> =
