@@ -18,6 +18,7 @@ import { UserStatusEnum } from "../../../infra/postgres/user";
 import { defaultSort } from "@default/sort";
 import { Hash } from "@security/hash";
 import { NotFoundError } from "../errors/not-found-error";
+import { DbTransaction } from ".";
 
 export type UserList = {
 	id: string;
@@ -66,10 +67,14 @@ export const UserRepository = () => {
 
 	return {
 		db: dbInstance,
+		getDb: (tx?: DbTransaction) => tx || dbInstance.$cache,
 
 		findAll: async (
 			queryParam: DatatableType,
+			tx?: DbTransaction,
 		): Promise<PaginationResponse<UserList>> => {
+			const database = tx || dbInstance;
+
 			const page: number = queryParam.page || 1;
 			const limit: number = queryParam.limit || 10;
 			const search: string | null = queryParam.search || null;
@@ -120,7 +125,7 @@ export const UserRepository = () => {
 					filteredCondition = and(
 						whereCondition,
 						exists(
-							dbInstance
+							database
 								.select()
 								.from(user_rolesTable)
 								.where(
@@ -158,7 +163,7 @@ export const UserRepository = () => {
 			const orderColumn = validateOrderBy[normalizedOrderBy];
 
 			const [data, totalCount] = await Promise.all([
-				dbInstance.query.users.findMany({
+				database.query.users.findMany({
 					where: finalWhereCondition,
 					orderBy:
 						orderDirection === "asc" ? asc(orderColumn) : desc(orderColumn),
@@ -189,7 +194,7 @@ export const UserRepository = () => {
 						},
 					},
 				}),
-				dbInstance.$count(usersTable, finalWhereCondition),
+				database.$count(usersTable, finalWhereCondition),
 			]);
 
 			const formattedData: UserList[] = data.map((user) => ({
@@ -212,9 +217,11 @@ export const UserRepository = () => {
 			};
 		},
 
-		create: async (data: UserCreate): Promise<void> => {
+		create: async (data: UserCreate, tx?: DbTransaction): Promise<void> => {
+			const database = tx || dbInstance;
+
 			// validate is the email exist
-			const isEmailExist = await db
+			const isEmailExist = await database
 				.select()
 				.from(usersTable)
 				.where(
@@ -232,7 +239,7 @@ export const UserRepository = () => {
 			}
 
 			const hashedPassword = await Hash.generateHash(data.password);
-			const user = await dbInstance
+			const user = await database
 				.insert(usersTable)
 				.values({
 					name: data.name,
@@ -254,13 +261,17 @@ export const UserRepository = () => {
 						roleId,
 					}));
 
-					await dbInstance.insert(user_rolesTable).values(userRoles);
+					await database.insert(user_rolesTable).values(userRoles);
 				}
 			}
 		},
 
-		getDetail: async (userId: string): Promise<UserDetail> => {
-			const user = await dbInstance.query.users.findFirst({
+		getDetail: async (
+			userId: string,
+			tx?: DbTransaction,
+		): Promise<UserDetail> => {
+			const database = tx || dbInstance;
+			const user = await database.query.users.findFirst({
 				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
 
 				columns: {
@@ -314,8 +325,10 @@ export const UserRepository = () => {
 		update: async (
 			userId: string,
 			data: Omit<UserCreate, "password">,
+			tx?: DbTransaction,
 		): Promise<void> => {
-			const user = await dbInstance.query.users.findFirst({
+			const database = tx || dbInstance;
+			const user = await database.query.users.findFirst({
 				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
 			});
 
@@ -323,7 +336,7 @@ export const UserRepository = () => {
 				throw new NotFoundError("User not found");
 			}
 
-			await dbInstance
+			await database
 				.update(usersTable)
 				.set({
 					name: data.name,
@@ -335,7 +348,7 @@ export const UserRepository = () => {
 
 			// remove all role or adding new role
 			if (data.role_ids && data.role_ids.length > 0) {
-				await dbInstance
+				await database
 					.delete(user_rolesTable)
 					.where(eq(user_rolesTable.userId, userId));
 
@@ -346,16 +359,17 @@ export const UserRepository = () => {
 					userId,
 					roleId,
 				}));
-				await dbInstance.insert(user_rolesTable).values(userRoles);
+				await database.insert(user_rolesTable).values(userRoles);
 			} else {
-				await dbInstance
+				await database
 					.delete(user_rolesTable)
 					.where(eq(user_rolesTable.userId, userId));
 			}
 		},
 
-		delete: async (userId: string): Promise<void> => {
-			const user = await dbInstance.query.users.findFirst({
+		delete: async (userId: string, tx?: DbTransaction): Promise<void> => {
+			const database = tx || dbInstance;
+			const user = await database.query.users.findFirst({
 				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
 			});
 
@@ -363,14 +377,18 @@ export const UserRepository = () => {
 				throw new NotFoundError("User not found");
 			}
 
-			await dbInstance
+			await database
 				.update(usersTable)
 				.set({ deleted_at: new Date() })
 				.where(eq(usersTable.id, userId));
 		},
 
-		UserInformation: async (userId: string): Promise<UserInformation> => {
-			const user = await dbInstance.query.users.findFirst({
+		UserInformation: async (
+			userId: string,
+			tx?: DbTransaction,
+		): Promise<UserInformation> => {
+			const database = tx || dbInstance;
+			const user = await database.query.users.findFirst({
 				where: and(
 					eq(usersTable.id, userId),
 					eq(usersTable.status, "active"),
@@ -437,8 +455,12 @@ export const UserRepository = () => {
 			};
 		},
 
-		findByEmail: async (email: string): Promise<UserForAuth> => {
-			const user = await dbInstance.query.users.findFirst({
+		findByEmail: async (
+			email: string,
+			tx?: DbTransaction,
+		): Promise<UserForAuth> => {
+			const database = tx || dbInstance;
+			const user = await database.query.users.findFirst({
 				where: and(eq(usersTable.email, email), isNull(usersTable.deleted_at)),
 				columns: {
 					id: true,

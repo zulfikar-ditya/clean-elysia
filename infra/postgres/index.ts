@@ -29,7 +29,7 @@ import {
 import { usersTable, usersRelations } from "./user";
 import { DatabaseConfig } from "config/database.config";
 
-const schema = {
+export const schema = {
 	// Tables
 	users: usersTable,
 	roles: rolesTable,
