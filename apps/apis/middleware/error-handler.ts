@@ -3,6 +3,7 @@ import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import { ForbiddenError, UnprocessableEntityError } from "@apis/errors";
 import { NotFoundError } from "@apis/errors/not-found-error";
 import type { Elysia } from "elysia";
+import { RateLimitError } from "bullmq";
 
 export const errorHandler = (app: Elysia) =>
 	app.onError(({ code, error, log: ctxLog, set }) => {
@@ -61,6 +62,16 @@ export const errorHandler = (app: Elysia) =>
 			set.status = 403;
 			return {
 				status: 403,
+				success: false,
+				message: error.message,
+				data: null,
+			};
+		}
+
+		if (error instanceof RateLimitError) {
+			set.status = 429;
+			return {
+				status: 429,
 				success: false,
 				message: error.message,
 				data: null,
