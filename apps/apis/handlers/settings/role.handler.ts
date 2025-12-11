@@ -73,8 +73,6 @@ export const RoleHandler = {
 			await RoleRepository().update(roleId, validate, tx);
 		});
 
-		await RoleRepository().update(roleId, validate);
-
 		return ResponseToolkit.success(ctx, {}, "Success update role", 200);
 	},
 
