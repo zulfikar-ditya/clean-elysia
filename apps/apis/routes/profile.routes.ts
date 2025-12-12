@@ -1,6 +1,7 @@
-import Elysia from "elysia";
 import { ProfileHandler } from "@apis/handlers/profile.handler";
 import { authMiddleware } from "@apis/middleware";
+import Elysia from "elysia";
+
 import { AppContext } from "../types/elysia";
 
 export const profileRoutes = new Elysia({ prefix: "/profile" })

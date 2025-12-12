@@ -1,7 +1,8 @@
 import { UserInformation } from "@apis/types/UserInformation";
+import { PermissionGuard } from "@packages/*";
+
 import { ForbiddenError, UnauthorizedError } from "../errors";
 import { AppContext } from "../types/elysia";
-import { PermissionGuard } from "@packages/*";
 
 export const permissionMiddleware = (
 	ctx: AppContext,

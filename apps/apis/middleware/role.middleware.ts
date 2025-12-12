@@ -1,6 +1,6 @@
+import { UnauthorizedError } from "@apis/errors";
 import { AppContext } from "@apis/types/elysia";
 import { UserInformation } from "@apis/types/UserInformation";
-import { UnauthorizedError } from "@apis/errors";
 import { RoleGuard } from "@packages/*";
 
 export const roleMiddleware = (ctx: AppContext, roleNames: string[]) => {

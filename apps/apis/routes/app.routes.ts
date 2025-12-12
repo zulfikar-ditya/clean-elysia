@@ -1,9 +1,10 @@
-import Elysia from "elysia";
 import { HomeHandler } from "@apis/handlers/home.handler";
+import Elysia from "elysia";
+
+import { analyticsRoutes } from "./analytics.routes";
 import { authRoutes } from "./auth.routes";
 import { profileRoutes } from "./profile.routes";
 import { settingRoutes } from "./setting.routes";
-import { analyticsRoutes } from "./analytics.routes";
 
 const routes = new Elysia();
 

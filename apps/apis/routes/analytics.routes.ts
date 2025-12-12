@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { AuthEventsRepository } from "infra/clickhouse/repositories/auth-events.repository";
 import { UserActivitiesRepository } from "infra/clickhouse/repositories/user-activities.repository";
+
 import { authMiddleware } from "../middleware";
 import { AppContext } from "../types/elysia";
 

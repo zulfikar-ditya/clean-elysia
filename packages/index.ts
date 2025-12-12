@@ -19,8 +19,7 @@ export * from "./default/strong-password";
 export * from "./default/token-lifetime";
 
 //
-export * from "./security/encrypt";
-export * from "./security/hash";
-
 export * from "./guards/permission.guard";
 export * from "./guards/role.guard";
+export * from "./security/encrypt";
+export * from "./security/hash";

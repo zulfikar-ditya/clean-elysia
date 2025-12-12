@@ -1,7 +1,7 @@
-import { pino, Logger, destination } from "pino";
 import { wrap } from "@bogeychan/elysia-logger";
 import { LoggerOptions } from "@bogeychan/elysia-logger/types";
 import { AppConfig } from "@config";
+import { destination, Logger, pino } from "pino";
 
 const isProd = AppConfig.APP_ENV !== "development";
 const logFile = destination({

@@ -1,5 +1,5 @@
-import { Worker } from "bullmq";
 import { EmailOptions, EmailService } from "@packages/mail/mail.service";
+import { Worker } from "bullmq";
 import { RedisClient } from "infra/redis/redis-client";
 import { log } from "packages/logger/logger";
 

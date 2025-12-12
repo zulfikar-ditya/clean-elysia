@@ -1,9 +1,10 @@
+import { AppContext } from "@apis/types/elysia";
+import { StrongPassword } from "@default/strong-password";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
-import { StrongPassword } from "@default/strong-password";
-import { AppContext } from "@apis/types/elysia";
-import { UserInformation } from "../types/UserInformation";
+
 import { ProfileService } from "../services";
+import { UserInformation } from "../types/UserInformation";
 
 const ProfileSchema = {
 	UpdateProfileSchema: vine.object({
