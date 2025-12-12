@@ -1,33 +1,33 @@
 // Drizzle
-export * from "./email_verification";
-export * from "./password_reset_token";
-export * from "./rbac";
-export * from "./user";
-
+import { DatabaseConfig } from "config/database.config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 // Import all tables
 import {
-	email_verificationsTable,
 	email_verificationsRelations,
+	email_verificationsTable,
 } from "./email_verification";
 import {
-	password_reset_tokensTable,
 	password_reset_tokensRelations,
+	password_reset_tokensTable,
 } from "./password_reset_token";
 import {
-	rolesTable,
-	permissionsTable,
-	role_permissionsTable,
-	user_rolesTable,
-	rolesRelations,
 	permissionsRelations,
+	permissionsTable,
 	role_permissionsRelations,
+	role_permissionsTable,
+	rolesRelations,
+	rolesTable,
 	user_rolesRelations,
+	user_rolesTable,
 } from "./rbac";
-import { usersTable, usersRelations } from "./user";
-import { DatabaseConfig } from "config/database.config";
+import { usersRelations, usersTable } from "./user";
+
+export * from "./email_verification";
+export * from "./password_reset_token";
+export * from "./rbac";
+export * from "./user";
 
 export const schema = {
 	// Tables
@@ -56,11 +56,11 @@ const db = drizzle(client, { schema });
 
 export {
 	db,
-	usersTable,
-	rolesTable,
-	permissionsTable,
-	role_permissionsTable,
-	user_rolesTable,
 	email_verificationsTable,
 	password_reset_tokensTable,
+	permissionsTable,
+	role_permissionsTable,
+	rolesTable,
+	user_rolesTable,
+	usersTable,
 };

@@ -1,10 +1,11 @@
-import Elysia from "elysia";
-import { authMiddleware } from "@apis/middleware";
-import { roleMiddleware } from "../middleware/role.middleware";
 import { PermissionHandler } from "@apis/handlers/settings/permission.handler";
+import { authMiddleware } from "@apis/middleware";
+import Elysia from "elysia";
+
 import { RoleHandler } from "../handlers/settings/role.handler";
-import { UserHandler } from "../handlers/settings/user.handler";
 import { SettingSelectHandler } from "../handlers/settings/select-options/select.handler";
+import { UserHandler } from "../handlers/settings/user.handler";
+import { roleMiddleware } from "../middleware/role.middleware";
 import { AppContext } from "../types/elysia";
 
 export const settingRoutes = new Elysia({ prefix: "/settings" })

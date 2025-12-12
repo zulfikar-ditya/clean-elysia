@@ -1,9 +1,9 @@
-import { errors } from "@vinejs/vine";
-import { UnauthorizedError } from "@apis/errors/unauthorized-error";
 import { ForbiddenError, UnprocessableEntityError } from "@apis/errors";
 import { NotFoundError } from "@apis/errors/not-found-error";
-import type { Elysia } from "elysia";
+import { UnauthorizedError } from "@apis/errors/unauthorized-error";
+import { errors } from "@vinejs/vine";
 import { RateLimitError } from "bullmq";
+import type { Elysia } from "elysia";
 
 export const errorHandler = (app: Elysia) =>
 	app.onError(({ code, error, log: ctxLog, set }) => {

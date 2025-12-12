@@ -1,11 +1,12 @@
+import { AppConfig, CORSConfig } from "@config";
 import cors from "@elysiajs/cors";
 import jwt from "@elysiajs/jwt";
-import { AppConfig, CORSConfig } from "@config";
 import { LoggerPlugin } from "@packages";
 import type { Elysia } from "elysia";
-import { rateLimit } from "elysia-rate-limit";
-import { RateLimitError } from "../errors/to-many-request-error";
 import { helmet } from "elysia-helmet";
+import { rateLimit } from "elysia-rate-limit";
+
+import { RateLimitError } from "../errors/to-many-request-error";
 
 export const setupMiddlewares = (app: Elysia) =>
 	app

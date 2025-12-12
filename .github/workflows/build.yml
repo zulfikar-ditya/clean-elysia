@@ -13,13 +13,13 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:18.1
         ports:
           - 5432:5432
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: app_db
+          POSTGRES_DB: elysia_db
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -85,7 +85,7 @@ jobs:
 
       - name: Drizzle Migrate
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_db
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/elysia_db
           # REDIS_HOST: localhost
           # REDIS_PORT: 6379
           # REDIS_PASSWORD: password123
@@ -98,7 +98,7 @@ jobs:
 
       - name: Clickhouse Status
         env:
-          CLICKHOUSE_URL: http://app:secret@clickhouse:8123
+          CLICKHOUSE_URL: http://app:secret@localhost:8123
         run: bun run infra/clickhouse/scripts/migrate.ts status
 
       - name: Build

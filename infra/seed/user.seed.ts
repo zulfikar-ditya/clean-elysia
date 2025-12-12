@@ -1,11 +1,11 @@
+import { Hash } from "@security/hash";
+import { eq } from "drizzle-orm";
 import {
 	db,
 	rolesTable,
 	user_rolesTable,
 	usersTable,
 } from "infra/postgres/index";
-import { Hash } from "@security/hash";
-import { eq } from "drizzle-orm";
 
 export const UserSeeder = async () => {
 	await db.transaction(async (tx) => {

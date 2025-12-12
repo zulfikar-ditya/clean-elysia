@@ -1,5 +1,5 @@
-import Elysia from "elysia";
 import { AuthHandler } from "@apis/handlers/auth.handler";
+import Elysia from "elysia";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
 	.post("/login", AuthHandler.login)

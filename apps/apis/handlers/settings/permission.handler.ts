@@ -1,8 +1,8 @@
+import { PermissionRepository } from "@app/apis/repositories";
 import { AppContext } from "@app/apis/types/elysia";
+import { DatatableToolkit } from "@toolkit/datatable";
 import { ResponseToolkit } from "@toolkit/response";
 import vine from "@vinejs/vine";
-import { DatatableToolkit } from "@toolkit/datatable";
-import { PermissionRepository } from "@app/apis/repositories";
 
 const PermissionSchema = {
 	CreatePermissionSchema: vine.object({
