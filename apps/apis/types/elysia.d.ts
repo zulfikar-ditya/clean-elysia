@@ -1,9 +1,9 @@
-import { JWT } from "@elysiajs/jwt";
-import type { Context } from "elysia";
+import { UserInformation } from "./UserInformation";
 
-import { UserInformation } from "./user";
+declare module "elysia" {
+	interface Store {
+		user?: UserInformation;
+	}
+}
 
-export type AppContext = Context & {
-	jwt: JWT;
-	user?: UserInformation;
-};
+export {};

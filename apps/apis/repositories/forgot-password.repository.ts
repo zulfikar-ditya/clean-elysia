@@ -9,6 +9,7 @@ export const ForgotPasswordRepository = () => {
 	return {
 		db: dbInstance,
 		getDb: (tx?: DbTransaction) => tx || dbInstance.$cache,
+		getTable: () => password_reset_tokensTable,
 
 		create: async (
 			data: { user_id: string; token: string },

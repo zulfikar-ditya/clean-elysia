@@ -20,3 +20,13 @@ export class RoleGuard {
 		return roleNames.every((role) => userInformation.roles.includes(role));
 	}
 }
+
+export const roleGuard =
+	(roles: string[]) =>
+	({ user }: { user?: any }) => {
+		if (!user) {
+			throw new UnauthorizedError();
+		}
+
+		RoleGuard.validate(user, roles);
+	};

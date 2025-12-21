@@ -1,3 +1,5 @@
+import { t } from "elysia";
+
 export type SortDirection = "asc" | "desc";
 
 export type DatatableType = {
@@ -15,3 +17,27 @@ export type DatatableType = {
 	// exclude=name,age
 	// include=name,age
 };
+
+export const DatatableQueryParams = t.Object({
+	page: t.Number({
+		default: 1,
+	}),
+	limit: t.Number({
+		default: 10,
+	}),
+	search: t.Optional(t.String()),
+	sort: t.Optional(
+		t.String({
+			default: "created_at",
+		}),
+	),
+	sortDirection: t.Union([t.Literal("asc"), t.Literal("desc")], {
+		default: "asc",
+	}),
+	filter: t.Optional(
+		t.Record(
+			t.String(),
+			t.Union([t.String(), t.Boolean(), t.String()]), // Date can be passed as string
+		),
+	),
+});

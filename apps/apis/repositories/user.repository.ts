@@ -218,7 +218,10 @@ export const UserRepository = () => {
 			};
 		},
 
-		create: async (data: UserCreate, tx?: DbTransaction): Promise<void> => {
+		create: async (
+			data: UserCreate,
+			tx?: DbTransaction,
+		): Promise<UserDetail> => {
 			const database = tx || dbInstance;
 
 			// validate is the email exist
@@ -265,6 +268,70 @@ export const UserRepository = () => {
 					await database.insert(user_rolesTable).values(userRoles);
 				}
 			}
+
+			if (user.length === 0) {
+				throw new UnprocessableEntityError("Failed to create user", [
+					{
+						field: "user",
+						message: "User creation failed",
+					},
+				]);
+			}
+
+			const userDetail = await database.query.users.findFirst({
+				where: and(
+					eq(usersTable.id, user[0].id),
+					isNull(usersTable.deleted_at),
+				),
+				columns: {
+					id: true,
+					name: true,
+					email: true,
+					status: true,
+					remark: true,
+					created_at: true,
+					updated_at: true,
+				},
+				with: {
+					user_roles: {
+						columns: {
+							roleId: true,
+							userId: true,
+						},
+						with: {
+							role: {
+								columns: {
+									id: true,
+									name: true,
+								},
+							},
+						},
+					},
+				},
+			});
+
+			if (!userDetail) {
+				throw new UnprocessableEntityError("Failed to retrieve created user", [
+					{
+						field: "user",
+						message: "User retrieval failed",
+					},
+				]);
+			}
+
+			return {
+				id: userDetail.id,
+				name: userDetail.name,
+				email: userDetail.email,
+				status: userDetail.status,
+				remark: userDetail.remark,
+				roles: userDetail.user_roles.map((userRole) => ({
+					id: userRole.role.id,
+					name: userRole.role.name,
+				})),
+				created_at: userDetail.created_at,
+				updated_at: userDetail.updated_at,
+			};
 		},
 
 		getDetail: async (
