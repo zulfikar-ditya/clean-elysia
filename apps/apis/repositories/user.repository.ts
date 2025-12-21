@@ -15,7 +15,7 @@ import {
 import { db, user_rolesTable, usersTable } from "infra/postgres/index";
 
 import { UserStatusEnum } from "../../../infra/postgres/user";
-import { UnauthorizedError, UnprocessableEntityError } from "../errors";
+import { BadRequestError, UnauthorizedError } from "../errors";
 import { NotFoundError } from "../errors/not-found-error";
 import { DatatableType, SortDirection } from "../types/datatable";
 import { PaginationResponse } from "../types/pagination";
@@ -234,7 +234,7 @@ export const UserRepository = () => {
 				.limit(1);
 
 			if (isEmailExist.length > 0) {
-				throw new UnprocessableEntityError("Email already exists", [
+				throw new BadRequestError("Email already exists", [
 					{
 						field: "email",
 						message: "Email already exists",
@@ -270,7 +270,7 @@ export const UserRepository = () => {
 			}
 
 			if (user.length === 0) {
-				throw new UnprocessableEntityError("Failed to create user", [
+				throw new BadRequestError("Failed to create user", [
 					{
 						field: "user",
 						message: "User creation failed",
@@ -311,7 +311,7 @@ export const UserRepository = () => {
 			});
 
 			if (!userDetail) {
-				throw new UnprocessableEntityError("Failed to retrieve created user", [
+				throw new BadRequestError("Failed to retrieve created user", [
 					{
 						field: "user",
 						message: "User retrieval failed",
@@ -541,7 +541,7 @@ export const UserRepository = () => {
 			});
 
 			if (!user) {
-				throw new UnprocessableEntityError("Validation error", [
+				throw new BadRequestError("Validation error", [
 					{
 						field: "email",
 						message: "Invalid email or password",

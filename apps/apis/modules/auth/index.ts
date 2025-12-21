@@ -51,6 +51,17 @@ export const AuthModule = new Elysia({
 						}),
 					),
 				}),
+				400: t.Object({
+					status: t.Number(),
+					success: t.Boolean(),
+					message: t.String(),
+					errors: t.Array(
+						t.Object({
+							field: t.String(),
+							message: t.String(),
+						}),
+					),
+				}),
 			},
 			detail: {
 				tags: ["Auth"],
