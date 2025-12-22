@@ -1,19 +1,40 @@
+// apps/apis/modules/home/index.ts
 import { db, RedisClient } from "@infra/*";
 import { DateToolkit } from "@toolkit/date";
-import { ResponseToolkit } from "@toolkit/response";
+import {
+	ResponseToolkit,
+	SuccessResponseSchema,
+	CommonResponseSchemas,
+} from "@toolkit/response";
 import { AppConfig } from "config/app.config";
 import { Elysia, t } from "elysia";
 
-export const HomeModule = new Elysia()
+// Define response schemas
+const AppInfoSchema = t.Object({
+	app_name: t.String(),
+	app_env: t.String(),
+	date: t.String(),
+});
+
+const HealthCheckSchema = t.Object({
+	status: t.String(),
+	timestamp: t.String(),
+	services: t.Object({
+		database: t.String(),
+		redis: t.String(),
+	}),
+});
+
+export const HomeModule = new Elysia({
+	detail: { tags: ["General"] },
+})
+	// ============================================
+	// ROOT ENDPOINT
+	// ============================================
 	.get(
 		"/",
-		({ set }) => {
-			set.status = 200;
-			return ResponseToolkit.success<{
-				app_name: string;
-				app_env: string;
-				date: string;
-			}>(
+		() => {
+			return ResponseToolkit.success(
 				{
 					app_name: AppConfig.APP_NAME,
 					app_env: AppConfig.APP_ENV,
@@ -22,97 +43,128 @@ export const HomeModule = new Elysia()
 					),
 				},
 				`Welcome to ${AppConfig.APP_NAME}`,
-				200,
 			);
 		},
 		{
 			response: {
-				200: t.Object({
-					status: t.Number({
-						example: 200,
-					}),
-					success: t.Boolean({
-						example: true,
-					}),
-					message: t.String({
-						example: `Welcome to ${AppConfig.APP_NAME}`,
-					}),
-					data: t.Nullable(
-						t.Object({
-							app_name: t.String({
-								example: AppConfig.APP_NAME,
-							}),
-							app_env: t.String({
-								example: AppConfig.APP_ENV,
-							}),
-							date: t.String({
-								example: DateToolkit.getDateTimeInformativeWithTimezone(
-									DateToolkit.now(),
-								),
-							}),
-						}),
-					),
-				}),
+				200: SuccessResponseSchema(AppInfoSchema),
 			},
 			detail: {
-				tags: ["Home"],
+				summary: "API root endpoint",
+				description: "Returns basic information about the API",
 			},
 		},
 	)
+
+	// ============================================
+	// HEALTH CHECK
+	// ============================================
 	.get(
 		"/health",
 		async ({ set }) => {
-			// Redis check
+			const healthStatus = {
+				status: "healthy",
+				timestamp: DateToolkit.getDateTimeInformativeWithTimezone(
+					DateToolkit.now(),
+				),
+				services: {
+					database: "healthy",
+					redis: "healthy",
+				},
+			};
+
+			// Check Redis
 			try {
 				const redis = RedisClient.getRedisClient();
 				await redis.ping();
-			} catch {
-				set.status = 500;
-				return ResponseToolkit.error("Error connecting to Redis", 500);
+				healthStatus.services.redis = "healthy";
+			} catch (error) {
+				healthStatus.services.redis = "unhealthy";
+				healthStatus.status = "degraded";
 			}
 
-			// Database check
+			// Check Database
 			try {
 				await db.execute(`SELECT 1`);
-			} catch {
-				set.status = 500;
-				return ResponseToolkit.error("Error connecting to Database", 500);
+				healthStatus.services.database = "healthy";
+			} catch (error) {
+				healthStatus.services.database = "unhealthy";
+				healthStatus.status = "degraded";
 			}
 
-			set.status = 200;
-			return ResponseToolkit.success<null>(null, "Ok", 200);
+			// Set appropriate status code
+			if (healthStatus.status === "degraded") {
+				set.status = 503;
+				return ResponseToolkit.error("Service partially unavailable", 503);
+			}
+
+			return ResponseToolkit.success(healthStatus, "All systems operational");
 		},
 		{
 			response: {
-				200: t.Object({
-					status: t.Number({
-						example: 200,
-					}),
-					success: t.Boolean({
-						example: true,
-					}),
-					message: t.String({
-						example: "Ok",
-					}),
+				200: SuccessResponseSchema(HealthCheckSchema),
+				503: t.Object({
+					status: t.Literal(503),
+					success: t.Literal(false),
+					message: t.String(),
 					data: t.Null(),
-				}),
-				500: t.Object({
-					status: t.Number({
-						example: 500,
-					}),
-					success: t.Boolean({
-						example: false,
-					}),
-					message: t.String({
-						example: "Error connecting to Database",
-					}),
-					data: t.Null({
-						example: null,
-					}),
 				}),
 			},
 			detail: {
-				tags: ["Home"],
+				summary: "Health check",
+				description: "Check the health status of all services",
+			},
+		},
+	)
+
+	// ============================================
+	// READINESS CHECK
+	// ============================================
+	.get(
+		"/ready",
+		async ({ set }) => {
+			try {
+				// Check if database is ready
+				await db.execute(`SELECT 1`);
+
+				// Check if Redis is ready
+				const redis = RedisClient.getRedisClient();
+				await redis.ping();
+
+				return ResponseToolkit.success({ ready: true }, "Service is ready");
+			} catch (error) {
+				set.status = 503;
+				return ResponseToolkit.error("Service not ready", 503);
+			}
+		},
+		{
+			response: {
+				200: SuccessResponseSchema(t.Object({ ready: t.Boolean() })),
+				503: CommonResponseSchemas[503] || CommonResponseSchemas[500],
+			},
+			detail: {
+				summary: "Readiness check",
+				description: "Check if the service is ready to accept traffic",
+			},
+		},
+	)
+
+	// ============================================
+	// LIVENESS CHECK
+	// ============================================
+	.get(
+		"/live",
+		() => {
+			// Simple check that the service is running
+			return ResponseToolkit.success({ alive: true }, "Service is alive");
+		},
+		{
+			response: {
+				200: SuccessResponseSchema(t.Object({ alive: t.Boolean() })),
+			},
+			detail: {
+				summary: "Liveness check",
+				description: "Check if the service is alive",
 			},
 		},
 	);

@@ -1,71 +1,71 @@
+// apps/apis/modules/profile/index.ts - METHOD 3: Using onBeforeHandle
 import Elysia, { t } from "elysia";
 import { authPlugin } from "packages/auth/auth.plugin";
 import { ProfileService } from "./service";
 import { Cache, UserInformationCacheKey } from "@cache/*";
+import { UserInformationTypeBox } from "@app/apis/types/UserInformation";
 import {
-	UserInformation,
-	UserInformationTypeBox,
-} from "@app/apis/types/UserInformation";
-import { ResponseToolkit } from "@toolkit/response";
+	ResponseToolkit,
+	SuccessResponseSchema,
+	CommonResponseSchemas,
+} from "@toolkit/response";
 import { UnauthorizedError } from "@app/apis/errors";
 
 export const ProfileModule = new Elysia({
 	prefix: "/profile",
+	detail: { tags: ["Profile"] },
 })
 	.use(authPlugin)
+
+	// Add authentication check for all routes in this module
+	.onBeforeHandle(({ user, set }) => {
+		console.log("ProfileModule onBeforeHandle - checking authentication");
+		if (!user) {
+			set.status = 401;
+			throw new UnauthorizedError("Authentication required");
+		}
+	})
+
+	// ============================================
+	// GET PROFILE
+	// ============================================
 	.get(
 		"/",
-		({ store }) => {
-			const userInformation = store.user as UserInformation;
-
-			if (!userInformation) {
-				throw new UnauthorizedError("Unauthorized");
-			}
-
-			return ResponseToolkit.success<UserInformation>(
-				userInformation,
-				"Profile fetched successfully",
-				200,
-			);
+		async ({ user }) => {
+			return ResponseToolkit.success(user!, "Profile retrieved successfully");
 		},
 		{
+			isAuthenticated: true,
 			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: UserInformationTypeBox,
-				}),
+				200: SuccessResponseSchema(UserInformationTypeBox),
+				401: CommonResponseSchemas[401],
 			},
 			detail: {
-				tags: ["Profile"],
+				summary: "Get current user profile",
+				description: "Retrieve the authenticated user's profile information",
 			},
 		},
 	)
+
+	// ============================================
+	// UPDATE PROFILE
+	// ============================================
 	.patch(
 		"/",
-		async ({ store, body }) => {
-			const userInformation = store.user as UserInformation;
+		async ({ user, body }) => {
+			// user is guaranteed to exist here
+			const updatedProfile = await ProfileService.updateProfile(user!.id, {
+				name: body.name,
+				email: body.email,
+			});
 
-			if (!userInformation) {
-				throw new UnauthorizedError("Unauthorized");
-			}
-
-			const updatedProfile = await ProfileService.updateProfile(
-				userInformation.id,
-				{
-					name: body.name || userInformation.name,
-					email: body.email,
-				},
-			);
-
-			const cacheKey = UserInformationCacheKey(userInformation.id);
+			// Update cache
+			const cacheKey = UserInformationCacheKey(user!.id);
 			await Cache.set(cacheKey, updatedProfile, 3600);
 
-			return ResponseToolkit.success<UserInformation>(
+			return ResponseToolkit.success(
 				updatedProfile,
 				"Profile updated successfully",
-				200,
 			);
 		},
 		{
@@ -80,15 +80,13 @@ export const ProfileModule = new Elysia({
 				}),
 			}),
 			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: UserInformationTypeBox,
-				}),
+				200: SuccessResponseSchema(UserInformationTypeBox),
+				401: CommonResponseSchemas[401],
+				422: CommonResponseSchemas[422],
 			},
 			detail: {
-				tags: ["Profile"],
+				summary: "Update user profile",
+				description: "Update the authenticated user's profile information",
 			},
 		},
 	);

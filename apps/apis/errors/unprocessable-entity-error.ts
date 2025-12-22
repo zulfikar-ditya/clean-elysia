@@ -21,4 +21,18 @@ export class UnprocessableEntityError extends Error {
 		this.code = 422;
 		this.error = error;
 	}
+
+	toResponse() {
+		return Response.json(
+			{
+				status: 422,
+				success: false,
+				message: this.message || "Unprocessable Entity",
+				errors: this.error || [],
+			},
+			{
+				status: 422,
+			},
+		);
+	}
 }

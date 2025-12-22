@@ -7,7 +7,20 @@ export class NotFoundError extends Error {
 	 */
 	constructor(message: string = "Resource not found") {
 		super(message);
-		this.name = "UnprocessableEntityError";
+		this.name = "NotFoundError";
 		this.code = 422;
+	}
+
+	toResponse() {
+		return Response.json(
+			{
+				status: 422,
+				success: false,
+				message: this.message || "Resource not found",
+			},
+			{
+				status: 422,
+			},
+		);
 	}
 }

@@ -21,4 +21,18 @@ export class BadRequestError extends Error {
 		this.code = 400;
 		this.error = error;
 	}
+
+	toResponse() {
+		return Response.json(
+			{
+				status: 400,
+				success: false,
+				message: this.message || "Bad Request",
+				errors: this.error || [],
+			},
+			{
+				status: 400,
+			},
+		);
+	}
 }

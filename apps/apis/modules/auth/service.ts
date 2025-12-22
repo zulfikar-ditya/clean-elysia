@@ -1,3 +1,4 @@
+// apps/apis/modules/auth/service.ts
 import { BadRequestError } from "@app/apis/errors";
 import {
 	ForgotPasswordRepository,
@@ -11,48 +12,70 @@ import { Hash } from "@security/hash";
 import { StrToolkit } from "@toolkit/string";
 import { AppConfig } from "config/app.config";
 import { eq } from "drizzle-orm";
+import { log } from "@packages/logger/logger";
 
 export const AuthService = {
 	singIn: async (email: string, password: string): Promise<UserInformation> => {
-		const user = await UserRepository().findByEmail(email);
-		if (!user) {
+		try {
+			const user = await UserRepository().findByEmail(email);
+
+			if (!user) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "email",
+						message: "Invalid email or password",
+					},
+				]);
+			}
+
+			if (user.email_verified_at === null) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "email",
+						message: "Email not verified. Please check your inbox.",
+					},
+				]);
+			}
+
+			if (user.status !== "active") {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "email",
+						message: "Your account is inactive. Please contact support.",
+					},
+				]);
+			}
+
+			const isPasswordValid = await Hash.compareHash(password, user.password);
+
+			if (!isPasswordValid) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "email",
+						message: "Invalid email or password",
+					},
+				]);
+			}
+
+			// Log successful login
+			log.info(
+				{ userId: user.id, email: user.email },
+				"User logged in successfully",
+			);
+
+			return await UserRepository().UserInformation(user.id);
+		} catch (error) {
+			if (error instanceof BadRequestError) {
+				throw error;
+			}
+			log.error({ error, email }, "Login error");
 			throw new BadRequestError("Validation error", [
 				{
 					field: "email",
-					message: "Invalid email or password",
+					message: "An error occurred during login",
 				},
 			]);
 		}
-
-		if (user.email_verified_at === null) {
-			throw new BadRequestError("Validation error", [
-				{
-					field: "email",
-					message: "Email not verified",
-				},
-			]);
-		}
-
-		if (user.status !== "active") {
-			throw new BadRequestError("Validation error", [
-				{
-					field: "email",
-					message: "Your account is not active. Please contact administrator.",
-				},
-			]);
-		}
-
-		const isPasswordValid = await Hash.compareHash(password, user.password);
-		if (!isPasswordValid) {
-			throw new BadRequestError("Validation error", [
-				{
-					field: "email",
-					message: "Invalid email or password",
-				},
-			]);
-		}
-
-		return await UserRepository().UserInformation(user.id);
 	},
 
 	register: async (data: {
@@ -60,156 +83,248 @@ export const AuthService = {
 		email: string;
 		password: string;
 	}): Promise<void> => {
-		const existingUser = await UserRepository().findByEmail(data.email);
-		if (existingUser) {
+		try {
+			const existingUser = await UserRepository()
+				.findByEmail(data.email)
+				.catch(() => null);
+
+			if (existingUser) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "email",
+						message: "Email is already registered",
+					},
+				]);
+			}
+
+			const hashedPassword = await Hash.generateHash(data.password);
+
+			await db.transaction(async (tx) => {
+				const newUser = await UserRepository().create(
+					{
+						name: data.name,
+						email: data.email,
+						password: hashedPassword,
+					},
+					tx,
+				);
+
+				const token = StrToolkit.random(255);
+
+				await tx.insert(email_verificationsTable).values({
+					token,
+					user_id: newUser.id,
+					expired_at: verificationTokenLifetime,
+				});
+
+				// Queue email instead of blocking
+				await sendEmailQueue.add("send-email", {
+					subject: "Email verification",
+					to: data.email,
+					template: "/auth/email-verification",
+					variables: {
+						user_id: newUser.id,
+						user_name: newUser.name,
+						user_email: newUser.email,
+						verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
+					},
+				});
+
+				log.info(
+					{ userId: newUser.id, email: newUser.email },
+					"User registered successfully",
+				);
+			});
+		} catch (error) {
+			if (error instanceof BadRequestError) {
+				throw error;
+			}
+			log.error({ error, email: data.email }, "Registration error");
 			throw new BadRequestError("Validation error", [
 				{
-					field: "email",
-					message: "Email is already registered",
+					field: "general",
+					message: "An error occurred during registration",
 				},
 			]);
 		}
+	},
 
-		const hashedPassword = await Hash.generateHash(data.password);
-		await db.transaction(async (tx) => {
-			const newUser = await UserRepository().create(
-				{
-					name: data.name,
-					email: data.email,
-					password: hashedPassword,
-				},
-				tx,
-			);
+	async resentVerificationEmail(email: string): Promise<void> {
+		try {
+			const user = await UserRepository()
+				.findByEmail(email)
+				.catch(() => null);
+
+			// Silent return if user doesn't exist (security: don't reveal if email is registered)
+			if (!user) {
+				log.warn(
+					{ email },
+					"Verification email requested for non-existent user",
+				);
+				return;
+			}
+
+			if (user.email_verified_at) {
+				log.info(
+					{ userId: user.id, email },
+					"Verification email requested for already verified user",
+				);
+				return;
+			}
 
 			const token = StrToolkit.random(255);
-			await tx.insert(email_verificationsTable).values({
+
+			await db.insert(email_verificationsTable).values({
 				token,
-				user_id: newUser.id,
+				user_id: user.id,
 				expired_at: verificationTokenLifetime,
 			});
 
 			await sendEmailQueue.add("send-email", {
 				subject: "Email verification",
-				to: data.email,
+				to: email,
 				template: "/auth/email-verification",
 				variables: {
-					user_id: newUser.id,
-					user_name: newUser.name,
-					user_email: newUser.email,
+					user_id: user.id,
+					user_name: user.name,
+					user_email: user.email,
 					verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
 				},
 			});
-		});
 
-		return;
-	},
-
-	async resentVerificationEmail(email: string): Promise<void> {
-		const user = await UserRepository().findByEmail(email);
-		if (!user) {
-			return;
+			log.info({ userId: user.id, email }, "Verification email resent");
+		} catch (error) {
+			log.error({ error, email }, "Error resending verification email");
+			// Silent failure - don't expose errors to client
 		}
-
-		if (user.email_verified_at) {
-			return;
-		}
-
-		const token = StrToolkit.random(255);
-		await db.insert(email_verificationsTable).values({
-			token,
-			user_id: user.id,
-			expired_at: verificationTokenLifetime,
-		});
-
-		await sendEmailQueue.add("send-email", {
-			subject: "Email verification",
-			to: email,
-			template: "/auth/email-verification",
-			variables: {
-				user_id: user.id,
-				user_name: user.name,
-				user_email: user.email,
-				verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
-			},
-		});
 	},
 
 	verifyEmail: async (token: string): Promise<void> => {
-		const record =
-			(
-				await db
-					.select()
-					.from(email_verificationsTable)
-					.where(eq(email_verificationsTable.token, token))
-			)[0] ?? null;
+		try {
+			const record =
+				(
+					await db
+						.select()
+						.from(email_verificationsTable)
+						.where(eq(email_verificationsTable.token, token))
+				)[0] ?? null;
 
-		if (!record || record.expired_at < new Date()) {
+			if (!record || record.expired_at < new Date()) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "token",
+						message: "Invalid or expired verification token",
+					},
+				]);
+			}
+
+			await db.transaction(async (trx) => {
+				await trx
+					.update(usersTable)
+					.set({ email_verified_at: new Date() })
+					.where(eq(usersTable.id, record.user_id));
+
+				await trx
+					.delete(email_verificationsTable)
+					.where(eq(email_verificationsTable.user_id, record.user_id));
+			});
+
+			log.info({ userId: record.user_id }, "Email verified successfully");
+		} catch (error) {
+			if (error instanceof BadRequestError) {
+				throw error;
+			}
+			log.error({ error, token }, "Email verification error");
 			throw new BadRequestError("Validation error", [
 				{
 					field: "token",
-					message: "Invalid or expired token",
+					message: "An error occurred during email verification",
 				},
 			]);
 		}
-
-		await db.transaction(async (trx) => {
-			await trx
-				.update(usersTable)
-				.set({ email_verified_at: new Date() })
-				.where(eq(usersTable.id, record.user_id));
-
-			await trx
-				.delete(email_verificationsTable)
-				.where(eq(email_verificationsTable.user_id, record.user_id));
-		});
 	},
 
 	forgotPassword: async (email: string): Promise<void> => {
-		const user = await UserRepository().findByEmail(email);
-		if (!user) {
-			return;
-		}
+		try {
+			const user = await UserRepository()
+				.findByEmail(email)
+				.catch(() => null);
 
-		const token = StrToolkit.random(255);
-		await ForgotPasswordRepository().create({
-			user_id: user.id,
-			token,
-		});
+			// Silent return if user doesn't exist (security: don't reveal if email is registered)
+			if (!user) {
+				log.warn({ email }, "Password reset requested for non-existent user");
+				return;
+			}
 
-		await sendEmailQueue.add("send-email", {
-			subject: "Reset Password",
-			to: email,
-			template: "/auth/forgot-password",
-			variables: {
+			const token = StrToolkit.random(255);
+
+			await ForgotPasswordRepository().create({
 				user_id: user.id,
-				user_name: user.name,
-				user_email: user.email,
-				reset_password_url: `${AppConfig.CLIENT_URL}/auth/reset-password?token=${token}`,
-			},
-		});
+				token,
+			});
+
+			await sendEmailQueue.add("send-email", {
+				subject: "Reset Password",
+				to: email,
+				template: "/auth/forgot-password",
+				variables: {
+					user_id: user.id,
+					user_name: user.name,
+					user_email: user.email,
+					reset_password_url: `${AppConfig.CLIENT_URL}/auth/reset-password?token=${token}`,
+				},
+			});
+
+			log.info({ userId: user.id, email }, "Password reset email sent");
+		} catch (error) {
+			log.error({ error, email }, "Error sending password reset email");
+			// Silent failure - don't expose errors to client
+		}
 	},
 
 	resetPassword: async (token: string, password: string): Promise<void> => {
-		const passwordReset = await ForgotPasswordRepository().findByToken(token);
-		if (!passwordReset) {
+		try {
+			const passwordReset = await ForgotPasswordRepository().findByToken(token);
+
+			if (!passwordReset) {
+				throw new BadRequestError("Validation error", [
+					{
+						field: "token",
+						message: "Invalid or expired password reset token",
+					},
+				]);
+			}
+
+			const hashedPassword = await Hash.generateHash(password);
+
+			await db.transaction(async (trx) => {
+				await trx
+					.update(usersTable)
+					.set({ password: hashedPassword })
+					.where(eq(usersTable.id, passwordReset.user_id));
+
+				await trx
+					.delete(ForgotPasswordRepository().getTable())
+					.where(
+						eq(ForgotPasswordRepository().getTable().id, passwordReset.id),
+					);
+			});
+
+			log.info(
+				{ userId: passwordReset.user_id },
+				"Password reset successfully",
+			);
+		} catch (error) {
+			if (error instanceof BadRequestError) {
+				throw error;
+			}
+			log.error({ error, token }, "Password reset error");
 			throw new BadRequestError("Validation error", [
 				{
 					field: "token",
-					message: "Invalid or expired password reset token",
+					message: "An error occurred during password reset",
 				},
 			]);
 		}
-
-		const hashedPassword = await Hash.generateHash(password);
-		await db.transaction(async (trx) => {
-			await trx
-				.update(usersTable)
-				.set({ password: hashedPassword })
-				.where(eq(usersTable.id, passwordReset.user_id));
-
-			await trx
-				.delete(ForgotPasswordRepository().getTable())
-				.where(eq(ForgotPasswordRepository().getTable().id, passwordReset.id));
-		});
 	},
 };

@@ -5,55 +5,207 @@ import {
 	UserInformationTypeBox,
 } from "@app/apis/types/UserInformation";
 import { AuthService } from "./service";
-import { ResponseToolkit } from "@toolkit/response";
+import {
+	ResponseToolkit,
+	SuccessResponseSchema,
+	CommonResponseSchemas,
+} from "@toolkit/response";
 import { StrongPassword } from "@default/strong-password";
 import { Cache, UserInformationCacheKey } from "@cache/*";
 import { JWT_CONFIG } from "config/jwt.config";
 
+const LoginResponseSchema = t.Object({
+	user: UserInformationTypeBox,
+	accessToken: t.String(),
+});
+
 export const AuthModule = new Elysia({
 	prefix: "/auth",
+	detail: { tags: ["Authentication"] },
 })
 	.use(jwt(JWT_CONFIG))
+
+	// ============================================
+	// LOGIN
+	// ============================================
 	.post(
 		"/login",
-		async ({ body, set, jwt }) => {
-			const user: UserInformation = await AuthService.singIn(
-				body.email,
-				body.password,
-			);
+		async ({ body, jwt, set }) => {
+			try {
+				const user: UserInformation = await AuthService.singIn(
+					body.email,
+					body.password,
+				);
 
-			const token = await jwt.sign({ id: user.id });
-			const cacheKey = UserInformationCacheKey(user.id);
-			await Cache.set(cacheKey, user, 3600);
+				const token = await jwt.sign({ id: user.id });
+				const cacheKey = UserInformationCacheKey(user.id);
+				await Cache.set(cacheKey, user, 3600);
 
-			set.status = 200;
-			return ResponseToolkit.success<{
-				user: UserInformation;
-				accessToken: string;
-			}>({ user, accessToken: token }, "Successfully logged in", 200);
+				set.status = 200;
+				return ResponseToolkit.success(
+					{
+						user,
+						accessToken: token,
+					},
+					"Successfully logged in",
+				);
+			} catch (error) {
+				throw error;
+			}
 		},
 		{
 			body: t.Object({
 				email: t.String({
 					format: "email",
+					error: "Invalid email format",
 				}),
-				password: t.String(),
+				password: t.String({
+					minLength: 1,
+					error: "Password is required",
+				}),
 			}),
 			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
+				200: SuccessResponseSchema(LoginResponseSchema),
+				400: t.Object({
+					status: t.Literal(400),
+					success: t.Literal(false),
 					message: t.String(),
-					data: t.Nullable(
+					errors: t.Array(
 						t.Object({
-							user: UserInformationTypeBox,
-							accessToken: t.String(),
+							field: t.String(),
+							message: t.String(),
 						}),
 					),
 				}),
+				422: CommonResponseSchemas[422],
+			},
+			detail: {
+				summary: "User login",
+				description: "Authenticate user with email and password",
+			},
+		},
+	)
+
+	// ============================================
+	// REGISTER
+	// ============================================
+	.post(
+		"/register",
+		async ({ set, body }) => {
+			try {
+				await AuthService.register({
+					name: body.name,
+					email: body.email,
+					password: body.password,
+				});
+
+				set.status = 201;
+				return ResponseToolkit.created(
+					null,
+					"Successfully registered. Please check your email to verify your account.",
+				);
+			} catch (error) {
+				throw error;
+			}
+		},
+		{
+			body: t.Object({
+				email: t.String({
+					format: "email",
+					error: "Invalid email format",
+				}),
+				name: t.String({
+					minLength: 1,
+					maxLength: 255,
+					error: "Name is required and must be less than 255 characters",
+				}),
+				password: t.String({
+					pattern: StrongPassword.source,
+					minLength: 8,
+					error:
+						"Password must be at least 8 characters and contain uppercase, lowercase, number and special character",
+				}),
+			}),
+			response: {
+				201: SuccessResponseSchema(t.Null()),
 				400: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
+					status: t.Literal(400),
+					success: t.Literal(false),
+					message: t.String(),
+					errors: t.Array(
+						t.Object({
+							field: t.String(),
+							message: t.String(),
+						}),
+					),
+				}),
+				422: CommonResponseSchemas[422],
+			},
+			detail: {
+				summary: "User registration",
+				description: "Register a new user account",
+			},
+		},
+	)
+
+	// ============================================
+	// RESEND VERIFICATION EMAIL
+	// ============================================
+	.post(
+		"/resend-verification",
+		async ({ body }) => {
+			await AuthService.resentVerificationEmail(body.email);
+
+			return ResponseToolkit.success(
+				null,
+				"If the email exists, a verification link has been sent. Please check your inbox.",
+			);
+		},
+		{
+			body: t.Object({
+				email: t.String({
+					format: "email",
+					maxLength: 255,
+				}),
+			}),
+			response: {
+				200: SuccessResponseSchema(t.Null()),
+			},
+			detail: {
+				summary: "Resend verification email",
+				description: "Request a new email verification link",
+			},
+		},
+	)
+
+	// ============================================
+	// VERIFY EMAIL
+	// ============================================
+	.post(
+		"/verify-email",
+		async ({ body }) => {
+			try {
+				await AuthService.verifyEmail(body.token);
+
+				return ResponseToolkit.success(
+					null,
+					"Email verified successfully. You can now log in.",
+				);
+			} catch (error) {
+				throw error;
+			}
+		},
+		{
+			body: t.Object({
+				token: t.String({
+					minLength: 1,
+				}),
+			}),
+			response: {
+				200: SuccessResponseSchema(t.Null()),
+				400: t.Object({
+					status: t.Literal(400),
+					success: t.Literal(false),
 					message: t.String(),
 					errors: t.Array(
 						t.Object({
@@ -64,120 +216,23 @@ export const AuthModule = new Elysia({
 				}),
 			},
 			detail: {
-				tags: ["Auth"],
+				summary: "Verify email address",
+				description: "Verify user's email address with token",
 			},
 		},
 	)
-	.post(
-		"/register",
-		async ({ set, body }) => {
-			await AuthService.register({
-				name: body.name,
-				email: body.email,
-				password: body.password,
-			});
 
-			set.status = 201;
-			return ResponseToolkit.success<null>(
-				null,
-				"Successfully registered",
-				201,
-			);
-		},
-		{
-			body: t.Object({
-				email: t.String({
-					format: "email",
-				}),
-				name: t.String(),
-				password: t.String({
-					pattern: StrongPassword.source,
-				}),
-			}),
-			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: t.Nullable(t.Null()),
-				}),
-			},
-			detail: {
-				tags: ["Auth"],
-			},
-		},
-	)
-	.post(
-		"resent-verification",
-		async (ctx) => {
-			const body = ctx.body;
-			await AuthService.resentVerificationEmail(body.email);
-
-			return ResponseToolkit.success<null>(
-				null,
-				"Verification email resent successfully",
-				200,
-			);
-		},
-		{
-			body: t.Object({
-				email: t.String({
-					format: "email",
-					maxLength: 255,
-				}),
-			}),
-			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: t.Nullable(t.Null()),
-				}),
-			},
-			detail: {
-				tags: ["Auth"],
-			},
-		},
-	)
-	.post(
-		"/verify-email",
-		async ({ body, set }) => {
-			await AuthService.verifyEmail(body.token);
-
-			set.status = 200;
-			return ResponseToolkit.success<null>(
-				null,
-				"Email verified successfully",
-				200,
-			);
-		},
-		{
-			body: t.Object({
-				token: t.String(),
-			}),
-			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: t.Nullable(t.Null()),
-				}),
-			},
-			detail: {
-				tags: ["Auth"],
-			},
-		},
-	)
+	// ============================================
+	// FORGOT PASSWORD
+	// ============================================
 	.post(
 		"/forgot-password",
-		async ({ set, body }) => {
+		async ({ body }) => {
 			await AuthService.forgotPassword(body.email);
 
-			set.status = 200;
-			return ResponseToolkit.success<null>(
+			return ResponseToolkit.success(
 				null,
-				"Password reset email sent successfully",
-				200,
+				"If the email exists, a password reset link has been sent. Please check your inbox.",
 			);
 		},
 		{
@@ -188,48 +243,60 @@ export const AuthModule = new Elysia({
 				}),
 			}),
 			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
-					message: t.String(),
-					data: t.Nullable(t.Null()),
-				}),
+				200: SuccessResponseSchema(t.Null()),
 			},
 			detail: {
-				tags: ["Auth"],
+				summary: "Request password reset",
+				description: "Send password reset email to user",
 			},
 		},
 	)
+
+	// ============================================
+	// RESET PASSWORD
+	// ============================================
 	.post(
 		"/reset-password",
-		async ({ set, body }) => {
-			await AuthService.resetPassword(body.token, body.new_password);
-			set.status = 200;
+		async ({ body }) => {
+			try {
+				await AuthService.resetPassword(body.token, body.new_password);
 
-			return ResponseToolkit.success<null>(
-				null,
-				"Password has been reset successfully",
-				200,
-			);
+				return ResponseToolkit.success(
+					null,
+					"Password has been reset successfully. You can now log in with your new password.",
+				);
+			} catch (error) {
+				throw error;
+			}
 		},
 		{
 			body: t.Object({
-				token: t.String(),
+				token: t.String({
+					minLength: 1,
+				}),
 				new_password: t.String({
 					pattern: StrongPassword.source,
+					minLength: 8,
 					maxLength: 255,
 				}),
 			}),
 			response: {
-				200: t.Object({
-					status: t.Number(),
-					success: t.Boolean(),
+				200: SuccessResponseSchema(t.Null()),
+				400: t.Object({
+					status: t.Literal(400),
+					success: t.Literal(false),
 					message: t.String(),
-					data: t.Nullable(t.Null()),
+					errors: t.Array(
+						t.Object({
+							field: t.String(),
+							message: t.String(),
+						}),
+					),
 				}),
 			},
 			detail: {
-				tags: ["Auth"],
+				summary: "Reset password",
+				description: "Reset user password with token",
 			},
 		},
 	);
