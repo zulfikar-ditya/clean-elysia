@@ -1,4 +1,5 @@
 // apps/apis/modules/home/index.ts
+import { baseApp } from "@app/apis/base";
 import { db, RedisClient } from "@infra/*";
 import { DateToolkit } from "@toolkit/date";
 import {
@@ -8,26 +9,16 @@ import {
 } from "@toolkit/response";
 import { AppConfig } from "config/app.config";
 import { Elysia, t } from "elysia";
-
-// Define response schemas
-const AppInfoSchema = t.Object({
-	app_name: t.String(),
-	app_env: t.String(),
-	date: t.String(),
-});
-
-const HealthCheckSchema = t.Object({
-	status: t.String(),
-	timestamp: t.String(),
-	services: t.Object({
-		database: t.String(),
-		redis: t.String(),
-	}),
-});
+import {
+	AppInfoSchema,
+	HealthCheckSchema,
+	HealthCheckSchema503,
+} from "./schema";
 
 export const HomeModule = new Elysia({
 	detail: { tags: ["General"] },
 })
+	.use(baseApp)
 	// ============================================
 	// ROOT ENDPOINT
 	// ============================================
@@ -78,7 +69,7 @@ export const HomeModule = new Elysia({
 				const redis = RedisClient.getRedisClient();
 				await redis.ping();
 				healthStatus.services.redis = "healthy";
-			} catch (error) {
+			} catch {
 				healthStatus.services.redis = "unhealthy";
 				healthStatus.status = "degraded";
 			}
@@ -87,7 +78,7 @@ export const HomeModule = new Elysia({
 			try {
 				await db.execute(`SELECT 1`);
 				healthStatus.services.database = "healthy";
-			} catch (error) {
+			} catch {
 				healthStatus.services.database = "unhealthy";
 				healthStatus.status = "degraded";
 			}
@@ -103,12 +94,7 @@ export const HomeModule = new Elysia({
 		{
 			response: {
 				200: SuccessResponseSchema(HealthCheckSchema),
-				503: t.Object({
-					status: t.Literal(503),
-					success: t.Literal(false),
-					message: t.String(),
-					data: t.Null(),
-				}),
+				503: HealthCheckSchema503,
 			},
 			detail: {
 				summary: "Health check",
@@ -132,7 +118,7 @@ export const HomeModule = new Elysia({
 				await redis.ping();
 
 				return ResponseToolkit.success({ ready: true }, "Service is ready");
-			} catch (error) {
+			} catch {
 				set.status = 503;
 				return ResponseToolkit.error("Service not ready", 503);
 			}

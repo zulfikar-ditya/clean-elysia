@@ -12,14 +12,13 @@ import {
 	or,
 	SQL,
 } from "drizzle-orm";
-import { db, user_rolesTable, usersTable } from "infra/postgres/index";
 
-import { UserStatusEnum } from "../../../infra/postgres/user";
-import { BadRequestError, UnauthorizedError } from "../errors";
-import { NotFoundError } from "../errors/not-found-error";
-import { DatatableType, SortDirection } from "../types/datatable";
-import { PaginationResponse } from "../types/pagination";
 import { DbTransaction } from ".";
+import { usersTable, UserStatusEnum } from "@postgres/user";
+import { db, user_rolesTable } from "..";
+import { DatatableType, SortDirection } from "@app/apis/types/datatable";
+import { PaginationResponse } from "@app/apis/types/pagination";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "@packages";
 
 export type UserList = {
 	id: string;

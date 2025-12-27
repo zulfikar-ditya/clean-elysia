@@ -1,12 +1,9 @@
 import { defaultSort } from "@default/sort";
 import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";
-import { db, permissionsTable } from "infra/postgres/index";
-
-import { UnprocessableEntityError } from "../errors";
-import { NotFoundError } from "../errors/not-found-error";
-import { DatatableType, SortDirection } from "../types/datatable";
-import { PaginationResponse } from "../types/pagination";
-import { DbTransaction } from ".";
+import { db, DbTransaction, permissionsTable } from "..";
+import { DatatableType, SortDirection } from "@app/apis/types/datatable";
+import { PaginationResponse } from "@app/apis/types/pagination";
+import { NotFoundError, UnprocessableEntityError } from "@packages";
 
 export type PermissionList = {
 	id: string;

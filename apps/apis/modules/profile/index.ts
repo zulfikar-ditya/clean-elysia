@@ -1,6 +1,6 @@
 // apps/apis/modules/profile/index.ts - METHOD 3: Using onBeforeHandle
 import Elysia, { t } from "elysia";
-import { authPlugin } from "packages/auth/auth.plugin";
+import { authPlugin } from "packages/plugins/auth.plugin";
 import { ProfileService } from "./service";
 import { Cache, UserInformationCacheKey } from "@cache/*";
 import { UserInformationTypeBox } from "@app/apis/types/UserInformation";
@@ -9,7 +9,7 @@ import {
 	SuccessResponseSchema,
 	CommonResponseSchemas,
 } from "@toolkit/response";
-import { UnauthorizedError } from "@app/apis/errors";
+import { UnauthorizedError } from "packages/errors";
 
 export const ProfileModule = new Elysia({
 	prefix: "/profile",
@@ -19,7 +19,6 @@ export const ProfileModule = new Elysia({
 
 	// Add authentication check for all routes in this module
 	.onBeforeHandle(({ user, set }) => {
-		console.log("ProfileModule onBeforeHandle - checking authentication");
 		if (!user) {
 			set.status = 401;
 			throw new UnauthorizedError("Authentication required");
@@ -31,7 +30,7 @@ export const ProfileModule = new Elysia({
 	// ============================================
 	.get(
 		"/",
-		async ({ user }) => {
+		({ user }) => {
 			return ResponseToolkit.success(user!, "Profile retrieved successfully");
 		},
 		{

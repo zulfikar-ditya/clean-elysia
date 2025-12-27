@@ -1,4 +1,4 @@
-import { PermissionList, PermissionRepository } from "@app/apis/repositories";
+import { PermissionList, PermissionRepository } from "@postgres/repositories";
 import { db } from "@postgres/index";
 import { DatatableType } from "../../../types/datatable";
 import { PaginationResponse } from "@app/apis/types/pagination";

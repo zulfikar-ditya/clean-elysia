@@ -1,8 +1,8 @@
 import Elysia from "elysia";
 import jwt from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
-import { UnauthorizedError, ForbiddenError } from "@app/apis/errors";
-import { UserRepository } from "@app/apis/repositories";
+import { UnauthorizedError, ForbiddenError } from "packages/errors";
+import { UserRepository } from "@postgres/repositories";
 import { Cache, UserInformationCacheKey } from "@cache/*";
 import type { UserInformation } from "@app/apis/types/UserInformation";
 import { JWT_CONFIG } from "config/jwt.config";

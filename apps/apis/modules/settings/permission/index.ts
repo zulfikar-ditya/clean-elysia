@@ -7,7 +7,7 @@ import {
 	SuccessResponseSchema,
 } from "@toolkit/response";
 import Elysia, { t } from "elysia";
-import { authPlugin } from "packages/auth/auth.plugin";
+import { authPlugin } from "packages/plugins/auth.plugin";
 import { PermissionService } from "./service";
 import { DatatableQueryParams } from "../../../types/datatable";
 import { roleGuard } from "@packages/*";
@@ -45,7 +45,7 @@ export const PermissionModule = new Elysia({
 				.get(
 					"/",
 					async ({ query }) => {
-						const queryParam = DatatableToolkit.parseFilter({ query } as any);
+						const queryParam = DatatableToolkit.parseFilter({ query });
 						const result = await PermissionService.findAll(queryParam);
 
 						return ResponseToolkit.success(

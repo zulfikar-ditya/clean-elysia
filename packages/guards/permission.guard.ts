@@ -1,4 +1,4 @@
-import { ForbiddenError, UnauthorizedError } from "@app/apis/errors";
+import { ForbiddenError, UnauthorizedError } from "packages/errors";
 import { UserInformation } from "@app/apis/types/UserInformation";
 
 export class PermissionGuard {

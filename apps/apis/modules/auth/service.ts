@@ -1,9 +1,9 @@
 // apps/apis/modules/auth/service.ts
-import { BadRequestError } from "@app/apis/errors";
+import { BadRequestError } from "packages/errors";
 import {
 	ForgotPasswordRepository,
 	UserRepository,
-} from "@app/apis/repositories";
+} from "@postgres/repositories";
 import { UserInformation } from "@app/apis/types/UserInformation";
 import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
 import { verificationTokenLifetime } from "@packages/*";

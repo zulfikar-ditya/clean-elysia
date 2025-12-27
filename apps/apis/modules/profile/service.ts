@@ -1,5 +1,5 @@
-import { UnprocessableEntityError } from "@app/apis/errors";
-import { UserRepository } from "@app/apis/repositories";
+import { UnprocessableEntityError } from "packages/errors";
+import { UserRepository } from "@postgres/repositories";
 import { UserInformation } from "@app/apis/types/UserInformation";
 import { db } from "@postgres/index";
 import { NotFoundError } from "elysia";

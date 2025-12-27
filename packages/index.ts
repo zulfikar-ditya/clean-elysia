@@ -1,9 +1,7 @@
 // Other
 export * from "./logger/logger";
 export * from "./mail/mail.service";
-
-// db -------------------------
-export * from "../infra/postgres/index";
+export * from "./errors/index";
 
 // event -------------------------
 
@@ -23,3 +21,6 @@ export * from "./guards/permission.guard";
 export * from "./guards/role.guard";
 export * from "./security/encrypt";
 export * from "./security/hash";
+
+// plugins -------------------
+export * from "./plugins/index";

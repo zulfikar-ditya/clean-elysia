@@ -64,3 +64,5 @@ export {
 	user_rolesTable,
 	usersTable,
 };
+
+export * from "./repositories/index";

@@ -1,4 +1,3 @@
-import { wrap } from "@bogeychan/elysia-logger";
 import { LoggerOptions } from "@bogeychan/elysia-logger/types";
 import { AppConfig } from "@config";
 import { destination, Logger, pino } from "pino";
@@ -74,24 +73,6 @@ const options: LoggerOptions = {
 
 // SINGLE logger instance for the whole app
 export const log: Logger = pino(options, logFile);
-
-/**
- * Elysia plugin: exposes ctx.log, auto-logs requests,
- * and enriches each line with request-scoped props.
- */
-export const LoggerPlugin = wrap(log, {
-	autoLogging: true,
-	customProps(ctx) {
-		const url = new URL(ctx.request.url);
-		return {
-			// eslint-disable-next-line
-			requestId: (ctx as any).requestId,
-			method: ctx.request.method,
-			path: url.pathname,
-			route: ctx.route,
-		};
-	},
-});
 
 /**
  * Create a child logger with bindings for a module or domain.
