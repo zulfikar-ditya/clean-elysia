@@ -6,7 +6,7 @@ export const AppInfoSchema = t.Object({
 	date: t.String(),
 });
 
-export const HealthCheckSchema = t.Object({
+export const HealthCheckDataSchema = t.Object({
 	status: t.String(),
 	timestamp: t.String(),
 	services: t.Object({
@@ -15,9 +15,16 @@ export const HealthCheckSchema = t.Object({
 	}),
 });
 
-export const HealthCheckSchema503 = t.Object({
+export const HealthCheckSuccessSchema = t.Object({
+	status: t.Literal(200),
+	message: t.String(),
+	data: HealthCheckDataSchema,
+	success: t.Literal(true),
+});
+
+export const HealthCheckErrorSchema = t.Object({
 	status: t.Literal(503),
-	success: t.Literal(false),
 	message: t.String(),
 	data: t.Null(),
+	success: t.Literal(false),
 });

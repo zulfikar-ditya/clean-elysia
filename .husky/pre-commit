@@ -1,9 +1,5 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 bun install 
 bunx lint-staged
 make db-generate 
-make db-migrate 
 make db-migrate 
 bun run build:all

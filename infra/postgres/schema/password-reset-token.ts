@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
-import { usersTable } from "./user";
+import { users } from "./user";
 
-export const password_reset_tokensTable = pgTable(
+export const passwordResetTokens = pgTable(
 	"password_reset_tokens",
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		user_id: uuid()
 			.notNull()
-			.references(() => usersTable.id),
+			.references(() => users.id),
 		token: varchar({ length: 255 }).notNull(),
 		created_at: timestamp().defaultNow(),
 		updated_at: timestamp()
@@ -19,12 +19,12 @@ export const password_reset_tokensTable = pgTable(
 	(table) => [index("password_reset_token_token_index").on(table.token)],
 );
 
-export const password_reset_tokensRelations = relations(
-	password_reset_tokensTable,
+export const passwordResetTokenRelations = relations(
+	passwordResetTokens,
 	({ one }) => ({
-		user: one(usersTable, {
-			fields: [password_reset_tokensTable.user_id],
-			references: [usersTable.id],
+		user: one(users, {
+			fields: [passwordResetTokens.user_id],
+			references: [users.id],
 		}),
 	}),
 );

@@ -5,21 +5,21 @@ import { NotFoundError, UnprocessableEntityError } from "@packages";
 import { DatatableToolkit } from "@toolkit/datatable";
 import { and, asc, desc, eq, ilike, ne, not, or, SQL } from "drizzle-orm";
 
-import { db, role_permissionsTable, rolesTable } from "..";
+import { db, rolePermissions, roles } from "..";
 import { DbTransaction } from ".";
 
 export type RoleList = {
 	id: string;
 	name: string;
-	createdAt: Date;
-	updatedAt: Date;
+	created_at: Date;
+	updated_at: Date;
 };
 
 export type RoleDetail = {
 	id: string;
 	name: string;
-	createdAt: Date;
-	updatedAt: Date;
+	created_at: Date;
+	updated_at: Date;
 	permissions: {
 		group: string;
 		names: {
@@ -44,7 +44,7 @@ export const RoleRepository = () => {
 			const database = tx || dbInstance;
 
 			const page: number = queryParam.page || 1;
-			const limit: number = queryParam.limit || 10;
+			const limit: number = queryParam.perPage || 10;
 			const search: string | null = queryParam.search || null;
 			const orderBy: string = queryParam.sort ? queryParam.sort : defaultSort;
 			const orderDirection: SortDirection = queryParam.sortDirection
@@ -56,7 +56,7 @@ export const RoleRepository = () => {
 
 			let whereCondition: SQL | undefined;
 			if (search) {
-				whereCondition = or(ilike(rolesTable.name, `%${search}%`));
+				whereCondition = or(ilike(roles.name, `%${search}%`));
 			}
 
 			let filteredCondition: SQL | undefined = undefined;
@@ -64,7 +64,7 @@ export const RoleRepository = () => {
 				if (filter.name) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(rolesTable.name, `%${filter.name.toString()}%`),
+						ilike(roles.name, `%${filter.name.toString()}%`),
 					);
 				}
 			}
@@ -76,32 +76,32 @@ export const RoleRepository = () => {
 
 			const orderColumn = DatatableToolkit.parseSort(
 				{
-					id: rolesTable.id,
-					name: rolesTable.name,
-					createdAt: rolesTable.createdAt,
-					updatedAt: rolesTable.updatedAt,
+					id: roles.id,
+					name: roles.name,
+					createdAt: roles.created_at,
+					updatedAt: roles.updated_at,
 				},
 				orderBy,
 			);
 
-			const roles = await database.query.roles.findMany({
+			const result = await database.query.roles.findMany({
 				where: finalWhereCondition,
 				orderBy:
 					orderDirection === "asc" ? asc(orderColumn) : desc(orderColumn),
 				columns: {
 					id: true,
 					name: true,
-					createdAt: true,
-					updatedAt: true,
+					created_at: true,
+					updated_at: true,
 				},
 				limit,
 				offset,
 			});
 
-			const totalCount = await database.$count(rolesTable, finalWhereCondition);
+			const totalCount = await database.$count(roles, finalWhereCondition);
 
 			return {
-				data: roles,
+				data: result,
 				meta: {
 					page,
 					limit,
@@ -120,7 +120,7 @@ export const RoleRepository = () => {
 			const database = tx || dbInstance;
 
 			const isNameExists = await database.query.roles.findFirst({
-				where: eq(rolesTable.name, data.name),
+				where: eq(roles.name, data.name),
 			});
 
 			if (isNameExists) {
@@ -133,20 +133,20 @@ export const RoleRepository = () => {
 			}
 
 			const role = await database
-				.insert(rolesTable)
+				.insert(roles)
 				.values({
 					name: data.name,
 				})
-				.returning({ id: rolesTable.id })
+				.returning({ id: roles.id })
 				.execute();
 
 			if (data.permission_ids.length > 0) {
-				const rolePermissions = data.permission_ids.map((permissionId) => ({
-					roleId: role[0].id,
-					permissionId,
+				const rolePermissionsData = data.permission_ids.map((permissionId) => ({
+					role_id: role[0].id,
+					permission_id: permissionId,
 				}));
 
-				await dbInstance.insert(role_permissionsTable).values(rolePermissions);
+				await dbInstance.insert(rolePermissions).values(rolePermissionsData);
 			}
 		},
 
@@ -154,12 +154,12 @@ export const RoleRepository = () => {
 			const database = tx || dbInstance;
 
 			const role = await database.query.roles.findFirst({
-				where: eq(rolesTable.id, id),
+				where: eq(roles.id, id),
 				columns: {
 					id: true,
 					name: true,
-					createdAt: true,
-					updatedAt: true,
+					created_at: true,
+					updated_at: true,
 				},
 
 				with: {
@@ -192,8 +192,8 @@ export const RoleRepository = () => {
 			return {
 				id: role.id,
 				name: role.name,
-				createdAt: role.createdAt,
-				updatedAt: role.updatedAt,
+				created_at: role.created_at,
+				updated_at: role.updated_at,
 				permissions: allPermissions.reduce(
 					(
 						acc: {
@@ -235,7 +235,7 @@ export const RoleRepository = () => {
 			const database = tx || dbInstance;
 
 			const role = await database.query.roles.findFirst({
-				where: eq(rolesTable.id, id),
+				where: eq(roles.id, id),
 			});
 
 			if (!role) {
@@ -243,7 +243,7 @@ export const RoleRepository = () => {
 			}
 
 			const isNameExists = await database.query.roles.findFirst({
-				where: and(eq(rolesTable.name, data.name), not(eq(rolesTable.id, id))),
+				where: and(eq(roles.name, data.name), not(eq(roles.id, id))),
 			});
 
 			if (isNameExists) {
@@ -256,25 +256,25 @@ export const RoleRepository = () => {
 			}
 
 			await database
-				.update(rolesTable)
+				.update(roles)
 				.set({
 					name: data.name,
 				})
-				.where(eq(rolesTable.id, id))
+				.where(eq(roles.id, id))
 				.execute();
 
 			await database
-				.delete(role_permissionsTable)
-				.where(eq(role_permissionsTable.roleId, id))
+				.delete(rolePermissions)
+				.where(eq(rolePermissions.role_id, id))
 				.execute();
 
 			if (data.permission_ids.length > 0) {
-				const rolePermissions = data.permission_ids.map((permissionId) => ({
-					roleId: id,
-					permissionId,
+				const rolePermissionsData = data.permission_ids.map((permissionId) => ({
+					role_id: id,
+					permission_id: permissionId,
 				}));
 
-				await database.insert(role_permissionsTable).values(rolePermissions);
+				await database.insert(rolePermissions).values(rolePermissionsData);
 			}
 		},
 
@@ -282,7 +282,7 @@ export const RoleRepository = () => {
 			const database = tx || dbInstance;
 
 			const role = await database.query.roles.findFirst({
-				where: eq(rolesTable.id, id),
+				where: eq(roles.id, id),
 			});
 
 			if (!role) {
@@ -290,24 +290,24 @@ export const RoleRepository = () => {
 			}
 
 			await database
-				.delete(role_permissionsTable)
-				.where(eq(role_permissionsTable.roleId, id))
+				.delete(rolePermissions)
+				.where(eq(rolePermissions.role_id, id))
 				.execute();
 
-			await database.delete(rolesTable).where(eq(rolesTable.id, id)).execute();
+			await database.delete(roles).where(eq(roles.id, id)).execute();
 		},
 
 		selectOptions: async (): Promise<{ id: string; name: string }[]> => {
-			const roles = await dbInstance.query.roles.findMany({
-				where: ne(rolesTable.name, "superuser"),
+			const result = await dbInstance.query.roles.findMany({
+				where: ne(roles.name, "superuser"),
 				columns: {
 					id: true,
 					name: true,
 				},
-				orderBy: asc(rolesTable.name),
+				orderBy: asc(roles.name),
 			});
 
-			return roles;
+			return result;
 		},
 	};
 };

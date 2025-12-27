@@ -5,10 +5,7 @@ export interface UserInformation {
 	name: string;
 	email: string;
 	roles: string[];
-	permissions: {
-		name: string;
-		permissions: string[];
-	}[];
+	permissions: string[];
 }
 
 export const UserInformationTypeBox = t.Object({
@@ -18,10 +15,5 @@ export const UserInformationTypeBox = t.Object({
 		format: "email",
 	}),
 	roles: t.Array(t.String()),
-	permissions: t.Array(
-		t.Object({
-			name: t.String(),
-			permissions: t.Array(t.String()),
-		}),
-	),
+	permissions: t.Array(t.String()),
 });

@@ -4,7 +4,7 @@ import { defaultSort } from "@default/sort";
 import { NotFoundError, UnprocessableEntityError } from "@packages";
 import { and, asc, desc, eq, ilike, not, or, SQL } from "drizzle-orm";
 
-import { db, DbTransaction, permissionsTable } from "..";
+import { db, DbTransaction, permissions } from "..";
 
 export type PermissionList = {
 	id: string;
@@ -37,8 +37,8 @@ export const PermissionRepository = () => {
 			const database = tx || dbInstance;
 
 			const page: number = queryParam.page || 1;
-			const limit: number = queryParam.limit || 10;
-			const search: string | null = queryParam.search || null;
+			const limit: number = queryParam.perPage || 10;
+			const search: string | undefined = queryParam.search;
 			const orderBy: string = queryParam.sort ? queryParam.sort : defaultSort;
 			const orderDirection: SortDirection = queryParam.sortDirection
 				? queryParam.sortDirection
@@ -51,8 +51,8 @@ export const PermissionRepository = () => {
 
 			if (search) {
 				whereCondition = or(
-					ilike(permissionsTable.name, `%${search}%`),
-					ilike(permissionsTable.group, `%${search}%`),
+					ilike(permissions.name, `%${search}%`),
+					ilike(permissions.group, `%${search}%`),
 				);
 			}
 
@@ -61,14 +61,14 @@ export const PermissionRepository = () => {
 				if (filter.name) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(permissionsTable.name, `%${filter.name.toString()}%`),
+						ilike(permissions.name, `%${filter.name.toString()}%`),
 					);
 				}
 
 				if (filter.group) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(permissionsTable.group, `%${filter.group.toString()}%`),
+						ilike(permissions.group, `%${filter.group.toString()}%`),
 					);
 				}
 			}
@@ -79,11 +79,11 @@ export const PermissionRepository = () => {
 			);
 
 			const validateOrderBy = {
-				id: permissionsTable.id,
-				name: permissionsTable.name,
-				group: permissionsTable.group,
-				created_at: permissionsTable.createdAt,
-				updated_at: permissionsTable.updatedAt,
+				id: permissions.id,
+				name: permissions.name,
+				group: permissions.group,
+				created_at: permissions.created_at,
+				updated_at: permissions.updated_at,
 			};
 
 			type OrderableKey = keyof typeof validateOrderBy;
@@ -103,28 +103,20 @@ export const PermissionRepository = () => {
 					id: true,
 					name: true,
 					group: true,
-					createdAt: true,
-					updatedAt: true,
+					created_at: true,
+					updated_at: true,
 				},
 				limit,
 				offset,
 			});
 
-			const data: PermissionList[] = rawData.map((item) => ({
-				id: item.id,
-				name: item.name,
-				group: item.group,
-				created_at: item.createdAt,
-				updated_at: item.updatedAt,
-			}));
-
 			const totalCount = await database.$count(
-				permissionsTable,
+				permissions,
 				finalWhereCondition,
 			);
 
 			return {
-				data,
+				data: rawData,
 				meta: {
 					page,
 					limit,
@@ -139,13 +131,13 @@ export const PermissionRepository = () => {
 		): Promise<PermissionList> => {
 			const database = tx || dbInstance;
 			const permission = await database.query.permissions.findFirst({
-				where: and(eq(permissionsTable.id, id)),
+				where: and(eq(permissions.id, id)),
 				columns: {
 					id: true,
 					name: true,
 					group: true,
-					createdAt: true,
-					updatedAt: true,
+					created_at: true,
+					updated_at: true,
 				},
 			});
 
@@ -153,13 +145,7 @@ export const PermissionRepository = () => {
 				throw new NotFoundError("Permission not found");
 			}
 
-			return {
-				id: permission.id,
-				name: permission.name,
-				group: permission.group,
-				created_at: permission.createdAt,
-				updated_at: permission.updatedAt,
-			};
+			return permission;
 		},
 
 		create: async (
@@ -173,7 +159,7 @@ export const PermissionRepository = () => {
 
 			const existingPermissions = await database.query.permissions.findMany({
 				where: or(
-					...permissionNames.map((name) => ilike(permissionsTable.name, name)),
+					...permissionNames.map((name) => ilike(permissions.name, name)),
 				),
 			});
 
@@ -191,7 +177,7 @@ export const PermissionRepository = () => {
 				group: data.group,
 			}));
 
-			await database.insert(permissionsTable).values(insertedData);
+			await database.insert(permissions).values(insertedData);
 		},
 
 		update: async (
@@ -201,7 +187,7 @@ export const PermissionRepository = () => {
 		): Promise<void> => {
 			const database = tx || dbInstance;
 			const permission = await database.query.permissions.findFirst({
-				where: eq(permissionsTable.id, id),
+				where: eq(permissions.id, id),
 			});
 
 			if (!permission) {
@@ -210,12 +196,9 @@ export const PermissionRepository = () => {
 
 			const isPermissionNameAlreadyExist = await database
 				.select()
-				.from(permissionsTable)
+				.from(permissions)
 				.where(
-					and(
-						eq(permissionsTable.name, data.name),
-						not(eq(permissionsTable.id, id)),
-					),
+					and(eq(permissions.name, data.name), not(eq(permissions.id, id))),
 				)
 				.limit(1);
 
@@ -229,27 +212,25 @@ export const PermissionRepository = () => {
 			}
 
 			await database
-				.update(permissionsTable)
+				.update(permissions)
 				.set({
 					name: data.name,
 					group: data.group,
 				})
-				.where(eq(permissionsTable.id, id));
+				.where(eq(permissions.id, id));
 		},
 
 		delete: async (id: string, tx?: DbTransaction): Promise<void> => {
 			const database = tx || dbInstance;
 			const permission = await database.query.permissions.findFirst({
-				where: eq(permissionsTable.id, id),
+				where: eq(permissions.id, id),
 			});
 
 			if (!permission) {
 				throw new NotFoundError("Permission not found");
 			}
 
-			await database
-				.delete(permissionsTable)
-				.where(eq(permissionsTable.id, id));
+			await database.delete(permissions).where(eq(permissions.id, id));
 		},
 
 		selectOptions: async (
@@ -265,9 +246,9 @@ export const PermissionRepository = () => {
 				if (!grouped[perm.group]) grouped[perm.group] = [];
 				grouped[perm.group].push(perm);
 			});
-			return Object.entries(grouped).map(([group, permissions]) => ({
+			return Object.entries(grouped).map(([group, permissionData]) => ({
 				group,
-				permissions,
+				permissions: permissionData,
 			}));
 		},
 	};

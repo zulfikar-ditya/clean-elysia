@@ -2,6 +2,7 @@
 export * from "./errors/index";
 export * from "./logger/logger";
 export * from "./mail/mail.service";
+export * from "./mail/services/index";
 
 // event -------------------------
 

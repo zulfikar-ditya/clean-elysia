@@ -1,1 +1,0 @@
-ALTER TABLE "email_verifications" ADD COLUMN "expired_at" timestamp NOT NULL;

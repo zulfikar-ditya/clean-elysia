@@ -19,7 +19,7 @@ export const ProfileModule = new Elysia({
 	// GET PROFILE
 	// ============================================
 	.get(
-		"/",
+		"",
 		({ user }) => {
 			return ResponseToolkit.success(user, "Profile retrieved successfully");
 		},
@@ -39,7 +39,7 @@ export const ProfileModule = new Elysia({
 	// UPDATE PROFILE
 	// ============================================
 	.patch(
-		"/",
+		"",
 		async ({ user, body }) => {
 			// user is guaranteed to exist here
 			const updatedProfile = await ProfileService.updateProfile(user.id, {

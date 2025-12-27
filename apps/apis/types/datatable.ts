@@ -1,29 +1,23 @@
+import { paginationLength } from "@default/pagination-length";
 import { t } from "elysia";
 
 export type SortDirection = "asc" | "desc";
 
 export type DatatableType = {
 	page: number;
-	limit: number;
-	search: string | null;
-	sort: string;
+	perPage: number;
+	search?: string;
+	sort?: string;
 	sortDirection: SortDirection;
-
-	// e.g ?filter[name]=John&filter[age]=30
-	filter: Record<string, boolean | string | Date> | null;
-
-	// NOTE: This is just an example, you can add more fields here
-	// fields=name,age
-	// exclude=name,age
-	// include=name,age
+	filter?: Record<string, boolean | string | Date>;
 };
 
 export const DatatableQueryParams = t.Object({
 	page: t.Number({
 		default: 1,
 	}),
-	limit: t.Number({
-		default: 10,
+	perPage: t.Number({
+		default: paginationLength,
 	}),
 	search: t.Optional(t.String()),
 	sort: t.Optional(
@@ -35,9 +29,6 @@ export const DatatableQueryParams = t.Object({
 		default: "asc",
 	}),
 	filter: t.Optional(
-		t.Record(
-			t.String(),
-			t.Union([t.String(), t.Boolean(), t.String()]), // Date can be passed as string
-		),
+		t.Record(t.String(), t.Union([t.String(), t.Boolean(), t.String()])),
 	),
 });

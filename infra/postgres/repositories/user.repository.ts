@@ -3,7 +3,7 @@ import { DatatableType, SortDirection } from "@app/apis/types/datatable";
 import { PaginationResponse } from "@app/apis/types/pagination";
 import { defaultSort } from "@default/sort";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "@packages";
-import { usersTable, UserStatusEnum } from "@postgres/user";
+import { users, UserStatusEnum } from "@postgres/schema/user";
 import { Hash } from "@security/hash";
 import {
 	and,
@@ -17,17 +17,18 @@ import {
 	SQL,
 } from "drizzle-orm";
 
-import { db, user_rolesTable } from "..";
+import { db, userRoles } from "..";
 import { DbTransaction } from ".";
 
 export type UserList = {
 	id: string;
 	name: string;
 	email: string;
-	status: UserStatusEnum | null;
-	roles: string[] | null;
-	created_at: Date | null;
-	updated_at: Date | null;
+	status: UserStatusEnum;
+	roles: string[];
+	remark: string | null;
+	created_at: Date;
+	updated_at: Date;
 };
 
 export type UserCreate = {
@@ -43,14 +44,14 @@ export type UserDetail = {
 	id: string;
 	name: string;
 	email: string;
-	status: UserStatusEnum | null;
+	status: UserStatusEnum;
 	remark: string | null;
 	roles: {
 		id: string;
 		name: string;
 	}[];
-	created_at: Date | null;
-	updated_at: Date | null;
+	created_at: Date;
+	updated_at: Date;
 };
 
 export type UserForAuth = {
@@ -76,7 +77,7 @@ export const UserRepository = () => {
 			const database = tx || dbInstance;
 
 			const page: number = queryParam.page || 1;
-			const limit: number = queryParam.limit || 10;
+			const limit: number = queryParam.perPage || 10;
 			const search: string | null = queryParam.search || null;
 			const orderBy: string = queryParam.sort ? queryParam.sort : defaultSort;
 			const orderDirection: SortDirection = queryParam.sortDirection
@@ -86,14 +87,14 @@ export const UserRepository = () => {
 				queryParam.filter || null;
 			const offset = (page - 1) * limit;
 
-			let whereCondition: SQL | undefined = isNull(usersTable.deleted_at);
+			let whereCondition: SQL | undefined = isNull(users.deleted_at);
 			if (search) {
 				whereCondition = and(
 					whereCondition,
 					or(
-						ilike(usersTable.name, `%${search}%`),
-						ilike(usersTable.email, `%${search}%`),
-						ilike(usersTable.status, `%${search}%`),
+						ilike(users.name, `%${search}%`),
+						ilike(users.email, `%${search}%`),
+						ilike(users.status, `%${search}%`),
 					),
 				);
 			}
@@ -103,21 +104,21 @@ export const UserRepository = () => {
 				if (filter.status) {
 					filteredCondition = and(
 						whereCondition,
-						eq(usersTable.status, filter.status as UserStatusEnum),
+						eq(users.status, filter.status as UserStatusEnum),
 					);
 				}
 
 				if (filter.name) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(usersTable.name, `%${filter.name.toString()}%`),
+						ilike(users.name, `%${filter.name.toString()}%`),
 					);
 				}
 
 				if (filter.email) {
 					filteredCondition = and(
 						whereCondition,
-						ilike(usersTable.email, `%${filter.email.toString()}%`),
+						ilike(users.email, `%${filter.email.toString()}%`),
 					);
 				}
 
@@ -127,11 +128,11 @@ export const UserRepository = () => {
 						exists(
 							database
 								.select()
-								.from(user_rolesTable)
+								.from(userRoles)
 								.where(
 									and(
-										eq(user_rolesTable.userId, usersTable.id),
-										eq(user_rolesTable.roleId, filter.role_id as string),
+										eq(userRoles.user_id, users.id),
+										eq(userRoles.role_id, filter.role_id as string),
 									),
 								),
 						),
@@ -145,12 +146,12 @@ export const UserRepository = () => {
 			);
 
 			const validateOrderBy = {
-				id: usersTable.id,
-				name: usersTable.name,
-				email: usersTable.email,
-				status: usersTable.status,
-				created_at: usersTable.created_at,
-				updated_at: usersTable.updated_at,
+				id: users.id,
+				name: users.name,
+				email: users.email,
+				status: users.status,
+				created_at: users.created_at,
+				updated_at: users.updated_at,
 			};
 
 			type OrderableKey = keyof typeof validateOrderBy;
@@ -174,14 +175,15 @@ export const UserRepository = () => {
 						name: true,
 						email: true,
 						status: true,
+						remark: true,
 						created_at: true,
 						updated_at: true,
 					},
 					with: {
 						user_roles: {
 							columns: {
-								roleId: true,
-								userId: true,
+								role_id: true,
+								user_id: true,
 							},
 							with: {
 								role: {
@@ -194,7 +196,7 @@ export const UserRepository = () => {
 						},
 					},
 				}),
-				database.$count(usersTable, finalWhereCondition),
+				database.$count(users, finalWhereCondition),
 			]);
 
 			const formattedData: UserList[] = data.map((user) => ({
@@ -202,6 +204,7 @@ export const UserRepository = () => {
 				name: user.name,
 				email: user.email,
 				status: user.status,
+				remark: user.remark,
 				roles: user.user_roles.map((userRole) => userRole.role.name),
 				created_at: user.created_at,
 				updated_at: user.updated_at,
@@ -226,10 +229,8 @@ export const UserRepository = () => {
 			// validate is the email exist
 			const isEmailExist = await database
 				.select()
-				.from(usersTable)
-				.where(
-					and(eq(usersTable.email, data.email), isNull(usersTable.deleted_at)),
-				)
+				.from(users)
+				.where(and(eq(users.email, data.email), isNull(users.deleted_at)))
 				.limit(1);
 
 			if (isEmailExist.length > 0) {
@@ -243,7 +244,7 @@ export const UserRepository = () => {
 
 			const hashedPassword = await Hash.generateHash(data.password);
 			const user = await database
-				.insert(usersTable)
+				.insert(users)
 				.values({
 					name: data.name,
 					email: data.email,
@@ -256,15 +257,15 @@ export const UserRepository = () => {
 			if (data.role_ids && data.role_ids.length > 0) {
 				if (user.length > 0) {
 					const userId = user[0].id;
-					const userRoles: {
-						userId: string;
-						roleId: string;
-					}[] = data.role_ids.map((roleId) => ({
-						userId,
-						roleId,
+					const userRolesData: {
+						user_id: string;
+						role_id: string;
+					}[] = data.role_ids.map((role_id) => ({
+						user_id: userId,
+						role_id: role_id,
 					}));
 
-					await database.insert(user_rolesTable).values(userRoles);
+					await database.insert(userRoles).values(userRolesData);
 				}
 			}
 
@@ -278,10 +279,7 @@ export const UserRepository = () => {
 			}
 
 			const userDetail = await database.query.users.findFirst({
-				where: and(
-					eq(usersTable.id, user[0].id),
-					isNull(usersTable.deleted_at),
-				),
+				where: and(eq(users.id, user[0].id), isNull(users.deleted_at)),
 				columns: {
 					id: true,
 					name: true,
@@ -294,8 +292,8 @@ export const UserRepository = () => {
 				with: {
 					user_roles: {
 						columns: {
-							roleId: true,
-							userId: true,
+							role_id: true,
+							user_id: true,
 						},
 						with: {
 							role: {
@@ -339,7 +337,7 @@ export const UserRepository = () => {
 		): Promise<UserDetail> => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
-				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
+				where: and(eq(users.id, userId), isNull(users.deleted_at)),
 
 				columns: {
 					id: true,
@@ -354,8 +352,8 @@ export const UserRepository = () => {
 				with: {
 					user_roles: {
 						columns: {
-							roleId: true,
-							userId: true,
+							role_id: true,
+							user_id: true,
 						},
 
 						with: {
@@ -396,7 +394,7 @@ export const UserRepository = () => {
 		): Promise<void> => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
-				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
+				where: and(eq(users.id, userId), isNull(users.deleted_at)),
 			});
 
 			if (!user) {
@@ -404,40 +402,36 @@ export const UserRepository = () => {
 			}
 
 			await database
-				.update(usersTable)
+				.update(users)
 				.set({
 					name: data.name,
 					email: data.email,
 					status: data.status || user.status,
 					remark: data.remark || user.remark,
 				})
-				.where(eq(usersTable.id, userId));
+				.where(eq(users.id, userId));
 
 			// remove all role or adding new role
 			if (data.role_ids && data.role_ids.length > 0) {
-				await database
-					.delete(user_rolesTable)
-					.where(eq(user_rolesTable.userId, userId));
+				await database.delete(userRoles).where(eq(userRoles.user_id, userId));
 
-				const userRoles: {
-					userId: string;
-					roleId: string;
-				}[] = data.role_ids.map((roleId) => ({
-					userId,
-					roleId,
+				const userRolesData: {
+					user_id: string;
+					role_id: string;
+				}[] = data.role_ids.map((role_id) => ({
+					user_id: userId,
+					role_id,
 				}));
-				await database.insert(user_rolesTable).values(userRoles);
+				await database.insert(userRoles).values(userRolesData);
 			} else {
-				await database
-					.delete(user_rolesTable)
-					.where(eq(user_rolesTable.userId, userId));
+				await database.delete(userRoles).where(eq(userRoles.user_id, userId));
 			}
 		},
 
 		delete: async (userId: string, tx?: DbTransaction): Promise<void> => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
-				where: and(eq(usersTable.id, userId), isNull(usersTable.deleted_at)),
+				where: and(eq(users.id, userId), isNull(users.deleted_at)),
 			});
 
 			if (!user) {
@@ -445,9 +439,9 @@ export const UserRepository = () => {
 			}
 
 			await database
-				.update(usersTable)
+				.update(users)
 				.set({ deleted_at: new Date() })
-				.where(eq(usersTable.id, userId));
+				.where(eq(users.id, userId));
 		},
 
 		UserInformation: async (
@@ -457,9 +451,9 @@ export const UserRepository = () => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
 				where: and(
-					eq(usersTable.id, userId),
-					eq(usersTable.status, "active"),
-					isNull(usersTable.deleted_at),
+					eq(users.id, userId),
+					eq(users.status, "active"),
+					isNull(users.deleted_at),
 				),
 
 				columns: {
@@ -471,8 +465,8 @@ export const UserRepository = () => {
 				with: {
 					user_roles: {
 						columns: {
-							roleId: true,
-							userId: true,
+							role_id: true,
+							user_id: true,
 						},
 
 						with: {
@@ -484,8 +478,8 @@ export const UserRepository = () => {
 								with: {
 									role_permissions: {
 										columns: {
-											roleId: true,
-											permissionId: true,
+											role_id: true,
+											permission_id: true,
 										},
 										with: {
 											permission: {
@@ -513,12 +507,11 @@ export const UserRepository = () => {
 				email: user.email,
 				name: user.name,
 				roles: user.user_roles.map((userRole) => userRole.role.name),
-				permissions: user.user_roles.map((userRole) => ({
-					name: userRole.role.name,
-					permissions: userRole.role.role_permissions.map(
+				permissions: user.user_roles.flatMap((userRole) =>
+					userRole.role.role_permissions.map(
 						(rolePermission) => rolePermission.permission.name,
 					),
-				})),
+				),
 			};
 		},
 
@@ -528,7 +521,7 @@ export const UserRepository = () => {
 		): Promise<UserForAuth> => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
-				where: and(eq(usersTable.email, email), isNull(usersTable.deleted_at)),
+				where: and(eq(users.email, email), isNull(users.deleted_at)),
 				columns: {
 					id: true,
 					name: true,

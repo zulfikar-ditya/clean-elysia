@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { db, password_reset_tokensTable } from "..";
+import { db, passwordResetTokens } from "..";
 import { DbTransaction } from ".";
 
 export const ForgotPasswordRepository = () => {
@@ -9,14 +9,14 @@ export const ForgotPasswordRepository = () => {
 	return {
 		db: dbInstance,
 		getDb: (tx?: DbTransaction) => tx || dbInstance.$cache,
-		getTable: () => password_reset_tokensTable,
+		getTable: () => passwordResetTokens,
 
 		create: async (
 			data: { user_id: string; token: string },
 			tx?: DbTransaction,
 		) => {
 			const database = tx || dbInstance;
-			await database.insert(password_reset_tokensTable).values({
+			await database.insert(passwordResetTokens).values({
 				token: data.token,
 				user_id: data.user_id,
 			});
@@ -24,8 +24,8 @@ export const ForgotPasswordRepository = () => {
 
 		findByToken: async (token: string, tx?: DbTransaction) => {
 			const database = tx || dbInstance;
-			return await database.query.password_reset_tokens.findFirst({
-				where: eq(password_reset_tokensTable.token, token),
+			return await database.query.passwordResetTokens.findFirst({
+				where: eq(passwordResetTokens.token, token),
 			});
 		},
 	};

@@ -1,18 +1,15 @@
-// apps/apis/modules/auth/service.ts
 import { UserInformation } from "@app/apis/types/UserInformation";
-import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
-import { verificationTokenLifetime } from "@packages/*";
+import { BadRequestError } from "@packages";
+import { AuthMailService } from "@packages/*";
 import { log } from "@packages/logger/logger";
-import { db, email_verificationsTable, usersTable } from "@postgres/index";
+import { db } from "@postgres/index";
 import {
 	ForgotPasswordRepository,
 	UserRepository,
 } from "@postgres/repositories";
+import { emailVerifications, users } from "@postgres/schema";
 import { Hash } from "@security/hash";
-import { StrToolkit } from "@toolkit/string";
-import { AppConfig } from "config/app.config";
 import { eq } from "drizzle-orm";
-import { BadRequestError } from "packages/errors";
 
 export const AuthService = {
 	singIn: async (email: string, password: string): Promise<UserInformation> => {
@@ -109,31 +106,8 @@ export const AuthService = {
 					tx,
 				);
 
-				const token = StrToolkit.random(255);
-
-				await tx.insert(email_verificationsTable).values({
-					token,
-					user_id: newUser.id,
-					expired_at: verificationTokenLifetime,
-				});
-
-				// Queue email instead of blocking
-				await sendEmailQueue.add("send-email", {
-					subject: "Email verification",
-					to: data.email,
-					template: "/auth/email-verification",
-					variables: {
-						user_id: newUser.id,
-						user_name: newUser.name,
-						user_email: newUser.email,
-						verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
-					},
-				});
-
-				log.info(
-					{ userId: newUser.id, email: newUser.email },
-					"User registered successfully",
-				);
+				const authMailService = new AuthMailService();
+				await authMailService.sendVerificationEmail(newUser.id, tx);
 			});
 		} catch (error) {
 			if (error instanceof BadRequestError) {
@@ -155,12 +129,7 @@ export const AuthService = {
 				.findByEmail(email)
 				.catch(() => null);
 
-			// Silent return if user doesn't exist (security: don't reveal if email is registered)
 			if (!user) {
-				log.warn(
-					{ email },
-					"Verification email requested for non-existent user",
-				);
 				return;
 			}
 
@@ -172,30 +141,10 @@ export const AuthService = {
 				return;
 			}
 
-			const token = StrToolkit.random(255);
-
-			await db.insert(email_verificationsTable).values({
-				token,
-				user_id: user.id,
-				expired_at: verificationTokenLifetime,
-			});
-
-			await sendEmailQueue.add("send-email", {
-				subject: "Email verification",
-				to: email,
-				template: "/auth/email-verification",
-				variables: {
-					user_id: user.id,
-					user_name: user.name,
-					user_email: user.email,
-					verification_url: `${AppConfig.CLIENT_URL}/auth/verify-email?token=${token}`,
-				},
-			});
-
-			log.info({ userId: user.id, email }, "Verification email resent");
+			const authMailService = new AuthMailService();
+			await authMailService.sendVerificationEmail(user.id);
 		} catch (error) {
 			log.error({ error, email }, "Error resending verification email");
-			// Silent failure - don't expose errors to client
 		}
 	},
 
@@ -205,8 +154,8 @@ export const AuthService = {
 				(
 					await db
 						.select()
-						.from(email_verificationsTable)
-						.where(eq(email_verificationsTable.token, token))
+						.from(emailVerifications)
+						.where(eq(emailVerifications.token, token))
 				)[0] ?? null;
 
 			if (!record || record.expired_at < new Date()) {
@@ -220,13 +169,13 @@ export const AuthService = {
 
 			await db.transaction(async (trx) => {
 				await trx
-					.update(usersTable)
+					.update(users)
 					.set({ email_verified_at: new Date() })
-					.where(eq(usersTable.id, record.user_id));
+					.where(eq(users.id, record.user_id));
 
 				await trx
-					.delete(email_verificationsTable)
-					.where(eq(email_verificationsTable.user_id, record.user_id));
+					.delete(emailVerifications)
+					.where(eq(emailVerifications.user_id, record.user_id));
 			});
 
 			log.info({ userId: record.user_id }, "Email verified successfully");
@@ -245,41 +194,16 @@ export const AuthService = {
 	},
 
 	forgotPassword: async (email: string): Promise<void> => {
-		try {
-			const user = await UserRepository()
-				.findByEmail(email)
-				.catch(() => null);
+		const user = await UserRepository()
+			.findByEmail(email)
+			.catch(() => null);
 
-			// Silent return if user doesn't exist (security: don't reveal if email is registered)
-			if (!user) {
-				log.warn({ email }, "Password reset requested for non-existent user");
-				return;
-			}
-
-			const token = StrToolkit.random(255);
-
-			await ForgotPasswordRepository().create({
-				user_id: user.id,
-				token,
-			});
-
-			await sendEmailQueue.add("send-email", {
-				subject: "Reset Password",
-				to: email,
-				template: "/auth/forgot-password",
-				variables: {
-					user_id: user.id,
-					user_name: user.name,
-					user_email: user.email,
-					reset_password_url: `${AppConfig.CLIENT_URL}/auth/reset-password?token=${token}`,
-				},
-			});
-
-			log.info({ userId: user.id, email }, "Password reset email sent");
-		} catch (error) {
-			log.error({ error, email }, "Error sending password reset email");
-			// Silent failure - don't expose errors to client
+		if (!user) {
+			return;
 		}
+
+		const authMailService = new AuthMailService();
+		await authMailService.sendResetPasswordEmail(user.id);
 	},
 
 	resetPassword: async (token: string, password: string): Promise<void> => {
@@ -299,9 +223,9 @@ export const AuthService = {
 
 			await db.transaction(async (trx) => {
 				await trx
-					.update(usersTable)
+					.update(users)
 					.set({ password: hashedPassword })
-					.where(eq(usersTable.id, passwordReset.user_id));
+					.where(eq(users.id, passwordReset.user_id));
 
 				await trx
 					.delete(ForgotPasswordRepository().getTable())

@@ -23,7 +23,11 @@ import { AuthService } from "./service";
 
 export const AuthModule = new Elysia({
 	prefix: "/auth",
-	detail: { tags: ["Authentication"], security: [] },
+	detail: {
+		tags: ["Authentication"],
+		security: [],
+		description: "Authentication APIs",
+	},
 })
 	.use(jwt(JWT_CONFIG))
 	.use(baseApp)

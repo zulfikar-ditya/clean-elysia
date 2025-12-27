@@ -2,22 +2,18 @@
 import { baseApp } from "@app/apis/base";
 import { db, RedisClient } from "@infra/*";
 import { DateToolkit } from "@toolkit/date";
-import {
-	CommonResponseSchemas,
-	ResponseToolkit,
-	SuccessResponseSchema,
-} from "@toolkit/response";
+import { ResponseToolkit, SuccessResponseSchema } from "@toolkit/response";
 import { AppConfig } from "config/app.config";
 import { Elysia, t } from "elysia";
 
 import {
 	AppInfoSchema,
-	HealthCheckSchema,
-	HealthCheckSchema503,
+	HealthCheckErrorSchema,
+	HealthCheckSuccessSchema,
 } from "./schema";
 
 export const HomeModule = new Elysia({
-	detail: { tags: ["General"], security: [] },
+	detail: { tags: ["General"], security: [], description: "General APIs" },
 })
 	.use(baseApp)
 	// ============================================
@@ -87,51 +83,29 @@ export const HomeModule = new Elysia({
 			// Set appropriate status code
 			if (healthStatus.status === "degraded") {
 				set.status = 503;
-				return ResponseToolkit.error("Service partially unavailable", 503);
+				return {
+					status: 503,
+					message: "Service partially unavailable",
+					data: null,
+					success: false,
+				};
 			}
 
-			return ResponseToolkit.success(healthStatus, "All systems operational");
+			return {
+				status: 200,
+				message: "All systems operational",
+				data: healthStatus,
+				success: true,
+			};
 		},
 		{
 			response: {
-				200: SuccessResponseSchema(HealthCheckSchema),
-				503: HealthCheckSchema503,
+				200: HealthCheckSuccessSchema,
+				503: HealthCheckErrorSchema,
 			},
 			detail: {
 				summary: "Health check",
 				description: "Check the health status of all services",
-			},
-		},
-	)
-
-	// ============================================
-	// READINESS CHECK
-	// ============================================
-	.get(
-		"/ready",
-		async ({ set }) => {
-			try {
-				// Check if database is ready
-				await db.execute(`SELECT 1`);
-
-				// Check if Redis is ready
-				const redis = RedisClient.getRedisClient();
-				await redis.ping();
-
-				return ResponseToolkit.success({ ready: true }, "Service is ready");
-			} catch {
-				set.status = 503;
-				return ResponseToolkit.error("Service not ready", 503);
-			}
-		},
-		{
-			response: {
-				200: SuccessResponseSchema(t.Object({ ready: t.Boolean() })),
-				503: CommonResponseSchemas[503] || CommonResponseSchemas[500],
-			},
-			detail: {
-				summary: "Readiness check",
-				description: "Check if the service is ready to accept traffic",
 			},
 		},
 	)

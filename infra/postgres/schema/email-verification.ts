@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
-import { usersTable } from "./user";
+import { users } from "./user";
 
-export const email_verificationsTable = pgTable(
+export const emailVerifications = pgTable(
 	"email_verifications",
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		user_id: uuid()
 			.notNull()
-			.references(() => usersTable.id),
+			.references(() => users.id),
 		token: varchar({ length: 255 }).notNull(),
 		expired_at: timestamp().notNull(),
 		created_at: timestamp().defaultNow(),
@@ -20,12 +20,12 @@ export const email_verificationsTable = pgTable(
 	(table) => [index("email_verification_token_index").on(table.token)],
 );
 
-export const email_verificationsRelations = relations(
-	email_verificationsTable,
+export const emailVerificationsRelations = relations(
+	emailVerifications,
 	({ one }) => ({
-		user: one(usersTable, {
-			fields: [email_verificationsTable.user_id],
-			references: [usersTable.id],
+		user: one(users, {
+			fields: [emailVerifications.user_id],
+			references: [users.id],
 		}),
 	}),
 );

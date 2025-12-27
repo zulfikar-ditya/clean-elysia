@@ -1,22 +1,17 @@
 import { Hash } from "@security/hash";
 import { eq } from "drizzle-orm";
-import {
-	db,
-	rolesTable,
-	user_rolesTable,
-	usersTable,
-} from "infra/postgres/index";
+import { db, roles, userRoles, users } from "infra/postgres/index";
 
 export const UserSeeder = async () => {
 	await db.transaction(async (tx) => {
-		await tx.insert(usersTable).values({
+		await tx.insert(users).values({
 			name: "superuser",
 			email: "superuser@example.com",
 			email_verified_at: new Date(),
 			password: await Hash.generateHash("password"),
 		});
 
-		await tx.insert(usersTable).values({
+		await tx.insert(users).values({
 			name: "admin",
 			email: "admin@example.com",
 			email_verified_at: new Date(),
@@ -26,38 +21,38 @@ export const UserSeeder = async () => {
 		// get created user
 		const superUser = await tx
 			.select()
-			.from(usersTable)
-			.where(eq(usersTable.name, "superuser"))
+			.from(users)
+			.where(eq(users.name, "superuser"))
 			.limit(1);
 		const admin = await tx
 			.select()
-			.from(usersTable)
-			.where(eq(usersTable.name, "admin"))
+			.from(users)
+			.where(eq(users.name, "admin"))
 			.limit(1);
 
 		// assign role
 		const superUserRole = await tx
 			.select()
-			.from(rolesTable)
-			.where(eq(rolesTable.name, "superuser"))
+			.from(roles)
+			.where(eq(roles.name, "superuser"))
 			.limit(1);
 		const adminRole = await tx
 			.select()
-			.from(rolesTable)
-			.where(eq(rolesTable.name, "admin"))
+			.from(roles)
+			.where(eq(roles.name, "admin"))
 			.limit(1);
 
 		if (superUserRole.at(0) && superUser.at(0)) {
-			await tx.insert(user_rolesTable).values({
-				userId: superUser.at(0)!.id,
-				roleId: superUserRole.at(0)!.id,
+			await tx.insert(userRoles).values({
+				user_id: superUser.at(0)!.id,
+				role_id: superUserRole.at(0)!.id,
 			});
 		}
 
 		if (adminRole.at(0) && admin.at(0)) {
-			await tx.insert(user_rolesTable).values({
-				userId: admin.at(0)!.id,
-				roleId: adminRole.at(0)!.id,
+			await tx.insert(userRoles).values({
+				user_id: admin.at(0)!.id,
+				role_id: adminRole.at(0)!.id,
 			});
 		}
 	});
