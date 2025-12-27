@@ -1,14 +1,12 @@
-import routes from "@apis/routes/app.routes";
-import { errorHandler } from "@app/apis/middleware/error-handler";
-import { setupMiddlewares } from "@app/apis/middleware/setup";
 import { AppConfig } from "@config";
-import { log } from "@packages";
+import { DocsPlugin, log } from "@packages";
 import { Elysia } from "elysia";
 
+import { bootstraps } from "./modules/index";
+
 const app = new Elysia()
-	.use(setupMiddlewares)
-	.use(routes)
-	.use(errorHandler)
+	.use(DocsPlugin)
+	.use(bootstraps)
 	.listen(AppConfig.APP_PORT);
 
 export default app.fetch;

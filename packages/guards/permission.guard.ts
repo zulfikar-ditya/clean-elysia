@@ -1,38 +1,26 @@
-import { ForbiddenError, UnauthorizedError } from "@app/apis/errors";
 import { UserInformation } from "@app/apis/types/UserInformation";
+import { ForbiddenError } from "packages/errors";
 
 export class PermissionGuard {
-	static validate(
-		userInformation: UserInformation,
-		requiredPermissions: string[],
-	) {
-		if (!userInformation) {
-			throw new UnauthorizedError();
-		}
-		if (!this.can(userInformation, requiredPermissions)) {
-			throw new ForbiddenError();
-		}
-	}
-
-	static can(
-		userInformation: UserInformation,
+	static canActivate(
+		user: UserInformation,
 		requiredPermissions: string[],
 	): boolean {
-		if (userInformation.roles.includes("superuser")) {
+		const UserPermissions = user.permissions || [];
+		if (user.roles.includes("superuser")) {
 			return true;
 		}
 
-		return requiredPermissions.every((permission) =>
-			userInformation.permissions.some((perm) =>
-				perm.permissions.includes(permission),
-			),
+		const hasPermissions = requiredPermissions.every((permission) =>
+			UserPermissions.includes(permission),
 		);
-	}
 
-	static cannot(
-		userInformation: UserInformation,
-		requiredPermissions: string[],
-	): boolean {
-		return !this.can(userInformation, requiredPermissions);
+		if (!hasPermissions) {
+			throw new ForbiddenError(
+				"You do not have the required permissions to access this resource.",
+			);
+		}
+
+		return true;
 	}
 }

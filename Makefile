@@ -76,41 +76,41 @@ migrate-clickhouse-status:
 	bun run infra/clickhouse/scripts/migrate.ts status
 
 # Database commands
-# db-generate:
-# 	bunx drizzle-kit generate
-
-# db-migrate:
-# 	bunx drizzle-kit migrate
-
-# db-push:
-# 	bunx drizzle-kit push
-
-# db-pull:
-# 	bunx drizzle-kit introspect
-
-# db-studio:
-# 	bunx drizzle-kit studio
-
-# db-drop:
-# 	bunx drizzle-kit drop
-
 db-generate:
-	npx drizzle-kit generate
+	bunx drizzle-kit generate
 
 db-migrate:
-	npx drizzle-kit migrate
+	bunx drizzle-kit migrate
 
 db-push:
-	npx drizzle-kit push
+	bunx drizzle-kit push
 
 db-pull:
-	npx drizzle-kit introspect
+	bunx drizzle-kit introspect
 
 db-studio:
-	npx drizzle-kit studio
+	bunx drizzle-kit studio
 
 db-drop:
-	npx drizzle-kit drop
+	bunx drizzle-kit drop
+
+# db-generate:
+# 	npx drizzle-kit generate
+
+# db-migrate:
+# 	npx drizzle-kit migrate
+
+# db-push:
+# 	npx drizzle-kit push
+
+# db-pull:
+# 	npx drizzle-kit introspect
+
+# db-studio:
+# 	npx drizzle-kit studio
+
+# db-drop:
+# 	npx drizzle-kit drop
 
 dev-all:
 	bun run dev:all

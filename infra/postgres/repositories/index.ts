@@ -1,0 +1,14 @@
+import { schema } from "@postgres/schema";
+import { ExtractTablesWithRelations } from "drizzle-orm";
+import { PgTransaction } from "drizzle-orm/pg-core";
+import { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
+
+export * from "./forgot-password.repository";
+export * from "./permission.repository";
+export * from "./user.repository";
+
+export type DbTransaction = PgTransaction<
+	PostgresJsQueryResultHKT,
+	typeof schema,
+	ExtractTablesWithRelations<typeof schema>
+>;

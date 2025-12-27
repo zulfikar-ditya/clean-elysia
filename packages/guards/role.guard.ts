@@ -1,22 +1,21 @@
-import { ForbiddenError, UnauthorizedError } from "@app/apis/errors";
 import { UserInformation } from "@app/apis/types/UserInformation";
+import { ForbiddenError } from "packages/errors";
 
 export class RoleGuard {
-	static validate(userInformation: UserInformation, roleNames: string[]) {
-		if (!userInformation) {
-			throw new UnauthorizedError();
-		}
-
-		if (!this.can(userInformation, roleNames)) {
-			throw new ForbiddenError();
-		}
-	}
-
-	static can(userInformation: UserInformation, roleNames: string[]): boolean {
-		if (userInformation.roles.includes("superuser")) {
+	static canActivate(user: UserInformation, requiredRoles: string[]): boolean {
+		if (user.roles.includes("superuser")) {
 			return true;
 		}
 
-		return roleNames.every((role) => userInformation.roles.includes(role));
+		const userRoles = user.roles || [];
+		const hasRoles = requiredRoles.every((role) => userRoles.includes(role));
+
+		if (!hasRoles) {
+			throw new ForbiddenError(
+				"You do not have the required roles to access this resource.",
+			);
+		}
+
+		return true;
 	}
 }

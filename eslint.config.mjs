@@ -63,7 +63,8 @@ export default tseslint.config(
 			//
 			// ---- Formatting ----
 			//
-			indent: ["error", "tab", { SwitchCase: 1 }],
+			// Disabled because Prettier handles indentation
+			// indent: ["error", "tab", { SwitchCase: 1 }],
 			"linebreak-style": ["error", "unix"],
 			quotes: [
 				"error",

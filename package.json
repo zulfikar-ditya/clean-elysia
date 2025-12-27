@@ -27,9 +27,10 @@
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",
 		"@clickhouse/client": "^1.14.0",
+		"@elysiajs/bearer": "^1.4.2",
 		"@elysiajs/cors": "^1.4.0",
 		"@elysiajs/jwt": "^1.4.0",
-		"@vinejs/vine": "^4.2.0",
+		"@elysiajs/openapi": "^1.4.12",
 		"bcryptjs": "^3.0.3",
 		"bullmq": "^5.65.1",
 		"crypto-js": "^4.2.0",
