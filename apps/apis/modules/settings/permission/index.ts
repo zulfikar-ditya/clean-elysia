@@ -1,4 +1,5 @@
 // apps/apis/modules/settings/permission/index.ts
+import { AuthPlugin } from "@packages";
 import { DatatableToolkit } from "@toolkit/datatable";
 import {
 	CommonResponseSchemas,
@@ -7,10 +8,9 @@ import {
 	SuccessResponseSchema,
 } from "@toolkit/response";
 import Elysia, { t } from "elysia";
-import { authPlugin } from "packages/plugins/auth.plugin";
-import { PermissionService } from "./service";
+
 import { DatatableQueryParams } from "../../../types/datatable";
-import { roleGuard } from "@packages/*";
+import { PermissionService } from "./service";
 
 const PermissionCreateSchema = t.Object({
 	name: t.Array(t.String({ minLength: 1, maxLength: 255 })),
@@ -28,7 +28,7 @@ export const PermissionModule = new Elysia({
 		tags: ["Permissions"],
 	},
 })
-	.use(authPlugin)
+	.use(AuthPlugin)
 	.guard(
 		{
 			beforeHandle: ({ user, set }) => {
@@ -56,7 +56,6 @@ export const PermissionModule = new Elysia({
 					},
 					{
 						query: DatatableQueryParams,
-						beforeHandle: roleGuard(["superuser"]),
 						detail: {
 							summary: "List all permissions",
 							description:
@@ -92,7 +91,6 @@ export const PermissionModule = new Elysia({
 					},
 					{
 						body: PermissionCreateSchema,
-						beforeHandle: roleGuard(["superuser"]),
 						detail: {
 							summary: "Create new permission(s)",
 							description: "Create one or more permissions in a specific group",
@@ -121,7 +119,6 @@ export const PermissionModule = new Elysia({
 						params: t.Object({
 							id: t.String({ format: "uuid" }),
 						}),
-						beforeHandle: roleGuard(["superuser"]),
 						detail: {
 							summary: "Get permission detail",
 							description:
@@ -161,7 +158,6 @@ export const PermissionModule = new Elysia({
 							id: t.String({ format: "uuid" }),
 						}),
 						body: PermissionUpdateSchema,
-						beforeHandle: roleGuard(["superuser"]),
 						detail: {
 							summary: "Update permission",
 							description: "Update an existing permission's details",
@@ -191,7 +187,6 @@ export const PermissionModule = new Elysia({
 						params: t.Object({
 							id: t.String({ format: "uuid" }),
 						}),
-						beforeHandle: roleGuard(["superuser"]),
 						detail: {
 							summary: "Delete permission",
 							description: "Permanently delete a permission",

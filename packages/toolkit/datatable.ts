@@ -1,11 +1,11 @@
 import { DatatableType, SortDirection } from "@app/apis/types/datatable";
-import { AppContext } from "@app/apis/types/elysia";
 import { paginationLength } from "@default/pagination-length";
 import { defaultSort } from "@default/sort";
 import { PgColumn } from "drizzle-orm/pg-core";
+import { Context } from "elysia";
 
 export class DatatableToolkit {
-	static parseFilter(ctx: AppContext): DatatableType {
+	static parseFilter(ctx: Context): DatatableType {
 		const query = ctx.query;
 
 		const page: number = query.page ? parseInt(query.page, 10) : 1;

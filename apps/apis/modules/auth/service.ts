@@ -1,18 +1,18 @@
 // apps/apis/modules/auth/service.ts
-import { BadRequestError } from "packages/errors";
+import { UserInformation } from "@app/apis/types/UserInformation";
+import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
+import { verificationTokenLifetime } from "@packages/*";
+import { log } from "@packages/logger/logger";
+import { db, email_verificationsTable, usersTable } from "@postgres/index";
 import {
 	ForgotPasswordRepository,
 	UserRepository,
 } from "@postgres/repositories";
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
-import { verificationTokenLifetime } from "@packages/*";
-import { db, email_verificationsTable, usersTable } from "@postgres/index";
 import { Hash } from "@security/hash";
 import { StrToolkit } from "@toolkit/string";
 import { AppConfig } from "config/app.config";
 import { eq } from "drizzle-orm";
-import { log } from "@packages/logger/logger";
+import { BadRequestError } from "packages/errors";
 
 export const AuthService = {
 	singIn: async (email: string, password: string): Promise<UserInformation> => {

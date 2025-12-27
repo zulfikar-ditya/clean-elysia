@@ -1,6 +1,6 @@
-import { Elysia } from "elysia";
-import openapi from "@elysiajs/openapi";
 import { AppConfig } from "@config";
+import openapi from "@elysiajs/openapi";
+import { Elysia } from "elysia";
 
 export const DocsPlugin = new Elysia({ name: "docs" }).use(
 	openapi({
@@ -16,6 +16,16 @@ export const DocsPlugin = new Elysia({ name: "docs" }).use(
 					url: "https://opensource.org/license/mit/",
 				},
 				contact: {},
+			},
+			security: [{ bearerAuth: [] }],
+			components: {
+				securitySchemes: {
+					bearerAuth: {
+						type: "http",
+						scheme: "bearer",
+						bearerFormat: "JWT",
+					},
+				},
 			},
 		},
 	}),

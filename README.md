@@ -187,7 +187,6 @@ clean-elysia/
 │   ├── event/             # Event handling
 │   │   ├── queue/         # Queue management
 │   │   └── worker/        # Worker utilities
-│   ├── guards/            # Authentication guards
 │   ├── logger/            # Logging utilities
 │   ├── mail/              # Email service
 │   │   └── templates/     # Email templates

@@ -3,12 +3,13 @@ import { baseApp } from "@app/apis/base";
 import { db, RedisClient } from "@infra/*";
 import { DateToolkit } from "@toolkit/date";
 import {
+	CommonResponseSchemas,
 	ResponseToolkit,
 	SuccessResponseSchema,
-	CommonResponseSchemas,
 } from "@toolkit/response";
 import { AppConfig } from "config/app.config";
 import { Elysia, t } from "elysia";
+
 import {
 	AppInfoSchema,
 	HealthCheckSchema,
@@ -16,7 +17,7 @@ import {
 } from "./schema";
 
 export const HomeModule = new Elysia({
-	detail: { tags: ["General"] },
+	detail: { tags: ["General"], security: [] },
 })
 	.use(baseApp)
 	// ============================================

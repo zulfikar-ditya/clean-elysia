@@ -1,8 +1,9 @@
-import { Elysia } from "elysia";
+import { CORSConfig } from "@config";
 import cors from "@elysiajs/cors";
+import { Elysia } from "elysia";
 import { helmet } from "elysia-helmet";
 import { rateLimit } from "elysia-rate-limit";
-import { CORSConfig } from "@config";
+
 import { RateLimitError } from "../errors/to-many-request-error";
 
 export const SecurityPlugin = new Elysia({ name: "security" })

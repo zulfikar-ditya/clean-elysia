@@ -1,7 +1,7 @@
 // Other
+export * from "./errors/index";
 export * from "./logger/logger";
 export * from "./mail/mail.service";
-export * from "./errors/index";
 
 // event -------------------------
 
@@ -17,8 +17,6 @@ export * from "./default/strong-password";
 export * from "./default/token-lifetime";
 
 //
-export * from "./guards/permission.guard";
-export * from "./guards/role.guard";
 export * from "./security/encrypt";
 export * from "./security/hash";
 

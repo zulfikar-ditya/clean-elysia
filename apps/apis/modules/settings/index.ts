@@ -1,4 +1,5 @@
 import Elysia from "elysia";
+
 import { PermissionModule } from "./permission";
 
 export const SettingsModule = new Elysia({

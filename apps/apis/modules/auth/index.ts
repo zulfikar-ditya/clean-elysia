@@ -1,15 +1,15 @@
-import { jwt } from "@elysiajs/jwt";
-import Elysia, { t } from "elysia";
+import { baseApp } from "@app/apis/base";
 import { UserInformation } from "@app/apis/types/UserInformation";
-import { AuthService } from "./service";
+import { Cache, UserInformationCacheKey } from "@cache/*";
+import { jwt } from "@elysiajs/jwt";
 import {
+	CommonResponseSchemas,
 	ResponseToolkit,
 	SuccessResponseSchema,
-	CommonResponseSchemas,
 } from "@toolkit/response";
-import { Cache, UserInformationCacheKey } from "@cache/*";
 import { JWT_CONFIG } from "config/jwt.config";
-import { baseApp } from "@app/apis/base";
+import Elysia, { t } from "elysia";
+
 import {
 	ForgotPasswordSchema,
 	LoginResponseSchema,
@@ -19,10 +19,11 @@ import {
 	ResetPasswordSchema,
 	VerifyEmailSchema,
 } from "./schema";
+import { AuthService } from "./service";
 
 export const AuthModule = new Elysia({
 	prefix: "/auth",
-	detail: { tags: ["Authentication"] },
+	detail: { tags: ["Authentication"], security: [] },
 })
 	.use(jwt(JWT_CONFIG))
 	.use(baseApp)
@@ -32,7 +33,7 @@ export const AuthModule = new Elysia({
 	// ============================================
 	.post(
 		"/login",
-		// eslint-disable-next-line @typescript-eslint/no-shadow
+		// eslint-disable-next-line no-shadow
 		async ({ body, jwt, set }) => {
 			const user: UserInformation = await AuthService.singIn(
 				body.email,

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
-import { DbTransaction } from ".";
 import { db, password_reset_tokensTable } from "..";
+import { DbTransaction } from ".";
 
 export const ForgotPasswordRepository = () => {
 	const dbInstance = db;

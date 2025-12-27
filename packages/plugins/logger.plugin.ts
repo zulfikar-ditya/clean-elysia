@@ -1,4 +1,5 @@
 import { wrap } from "@bogeychan/elysia-logger";
+
 import { log } from "..";
 
 /**

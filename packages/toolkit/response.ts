@@ -1,11 +1,10 @@
-// packages/toolkit/response.ts
-import { t } from "elysia";
+import { t, TSchema } from "elysia";
 
 // ============================================
 // RESPONSE TYPE DEFINITIONS
 // ============================================
 
-export const SuccessResponseSchema = <T extends any>(dataSchema: T) =>
+export const SuccessResponseSchema = <T extends TSchema>(dataSchema: T) =>
 	t.Object({
 		status: t.Number(),
 		success: t.Literal(true),
@@ -44,7 +43,7 @@ export const ValidationErrorResponseSchema = t.Object({
 	),
 });
 
-export const PaginatedResponseSchema = <T extends any>(itemSchema: T) =>
+export const PaginatedResponseSchema = <T extends TSchema>(itemSchema: T) =>
 	t.Object({
 		status: t.Number(),
 		success: t.Literal(true),
@@ -327,7 +326,7 @@ export const CommonResponseSchemas = {
 };
 
 // Helper to create response schema with specific data type
-export const createResponseSchema = <T extends any>(dataSchema: T) => ({
+export const createResponseSchema = <T extends TSchema>(dataSchema: T) => ({
 	200: SuccessResponseSchema(dataSchema),
 	400: ErrorResponseSchema,
 	401: CommonResponseSchemas[401],
@@ -337,7 +336,7 @@ export const createResponseSchema = <T extends any>(dataSchema: T) => ({
 });
 
 // Helper to create paginated response schema
-export const createPaginatedResponseSchema = <T extends any>(
+export const createPaginatedResponseSchema = <T extends TSchema>(
 	itemSchema: T,
 ) => ({
 	200: PaginatedResponseSchema(itemSchema),

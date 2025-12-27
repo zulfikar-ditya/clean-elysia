@@ -1,7 +1,8 @@
-import { PermissionList, PermissionRepository } from "@postgres/repositories";
-import { db } from "@postgres/index";
-import { DatatableType } from "../../../types/datatable";
 import { PaginationResponse } from "@app/apis/types/pagination";
+import { db } from "@postgres/index";
+import { PermissionList, PermissionRepository } from "@postgres/repositories";
+
+import { DatatableType } from "../../../types/datatable";
 
 export const PermissionService = {
 	findAll: async (

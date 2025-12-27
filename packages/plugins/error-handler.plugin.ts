@@ -1,13 +1,26 @@
 import { Elysia } from "elysia";
+
 import {
 	BadRequestError,
 	ForbiddenError,
-	UnauthorizedError,
-	UnprocessableEntityError,
 	NotFoundError,
 	RateLimitError,
+	UnauthorizedError,
+	UnprocessableEntityError,
 } from "../errors";
 import { LoggerPlugin } from "./logger.plugin";
+
+// Type definitions for Elysia validation errors
+interface ValidationError {
+	path?: string;
+	message?: string;
+}
+
+interface ValidationErrorDetails {
+	validator?: {
+		errors?: ValidationError[];
+	};
+}
 
 export const ErrorHandlerPlugin = new Elysia({
 	name: "error-handler",
@@ -87,8 +100,9 @@ export const ErrorHandlerPlugin = new Elysia({
 			set.status = 422;
 			log?.warn({ error }, "Request validation failed");
 
+			const validationError = error as ValidationErrorDetails;
 			const errors =
-				(error as any)?.validator?.errors?.map((err: any) => ({
+				validationError?.validator?.errors?.map((err: ValidationError) => ({
 					field: err.path?.replace("/", "") || "unknown",
 					message: err.message || "Validation failed",
 				})) ?? [];
@@ -97,9 +111,10 @@ export const ErrorHandlerPlugin = new Elysia({
 				status: 422,
 				success: false,
 				message: "Request validation failed",
-				errors: errors.length
-					? errors
-					: [{ field: "general", message: "Invalid request data" }],
+				errors:
+					errors.length > 0
+						? errors
+						: [{ field: "general", message: "Invalid request data" }],
 			};
 		}
 
