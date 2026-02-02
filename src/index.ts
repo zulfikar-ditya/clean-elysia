@@ -1,7 +1,14 @@
+import { AppConfig } from "@config";
+import { DocsPlugin, log } from "@packages";
 import { Elysia } from "elysia";
 
-const app = new Elysia().get("/", () => "Hello Elysia").listen(3000);
+import { bootstraps } from "./modules/index";
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+const app = new Elysia()
+	.use(DocsPlugin)
+	.use(bootstraps)
+	.listen(AppConfig.APP_PORT);
+
+export default app.fetch;
+
+log.info({}, `application running on port ${AppConfig.APP_PORT}`);
