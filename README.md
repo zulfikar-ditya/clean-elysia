@@ -280,4 +280,4 @@ describe("AuthService", () => {
 
 ## License
 
-Private - All rights reserved by Aolus Software
+MIT
