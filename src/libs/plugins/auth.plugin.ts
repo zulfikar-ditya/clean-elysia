@@ -1,9 +1,11 @@
 import bearer from "@elysiajs/bearer";
 import jwt from "@elysiajs/jwt";
 import {
+	Cache,
 	JWT_CONFIG,
 	UnauthorizedError,
 	UserInformation,
+	UserInformationCacheKey,
 	UserRepository,
 } from "@libs";
 import Elysia from "elysia";
@@ -34,17 +36,13 @@ export const AuthPlugin = new Elysia({ name: "auth" })
 				throw new UnauthorizedError("Invalid user ID in token");
 			}
 
-			user = await UserRepository().UserInformation(userId);
+			user = await Cache.get<UserInformation>(UserInformationCacheKey(userId));
 			if (!user) {
-				throw new UnauthorizedError("User not found");
+				user = await UserRepository().UserInformation(userId);
+				if (user) {
+					await Cache.set(UserInformationCacheKey(userId), user, 3600);
+				}
 			}
-
-			// user = await Cache.get<UserInformation>(UserInformationCacheKey(userId));			// if (!user) {
-			// 	user = await UserRepository().UserInformation(userId);
-			// 	if (user) {
-			// 		await Cache.set(UserInformationCacheKey(userId), user, 3600);
-			// 	}
-			// }
 		} catch {
 			throw new UnauthorizedError("Invalid authentication token");
 		}

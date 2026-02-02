@@ -1,8 +1,9 @@
 import { AppConfig, MailConfig } from "@config";
 import { EmailOptions, log } from "@libs";
-import { transporter } from "../transport";
 import fs from "fs";
 import path from "path";
+
+import { transporter } from "../transport";
 
 export const EmailService = {
 	async sendEmail(options: EmailOptions) {

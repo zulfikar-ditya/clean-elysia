@@ -17,14 +17,15 @@
 		"dev:api": "bun run --hot --watch ./src/index.ts",
 		"build:api": "bun build ./src/index.ts --outdir=dist --target=node",
 		"lint": "bun run eslint . --ext .ts,.js",
+		"lint:fix": "bun run eslint . --ext .ts,.js --fix",
 		"format": "bun run prettier --write .",
 		"prepare": "husky",
 		"dev:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run dev:server\" \"bun run dev:worker\"",
 		"build:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run build:server\" \"bun run build:worker\"",
 		"start:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run start:server\" \"bun run start:worker\"",
 		"db:postgres:seed": "bun run ./libs/database/postgres/seed/index.ts",
-		"migrate:clickhouse": "bun run infra/clickhouse/scripts/migrate.ts migrate",
-		"migrate:clickhouse:status": "bun run infra/clickhouse/scripts/migrate.ts status"
+		"migrate:clickhouse": "bun run ./libs/database/clickhouse/scripts/migrate.ts migrate",
+		"migrate:clickhouse:status": "bun run ./libs/database/clickhouse/scripts/migrate.ts status"
 	},
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",

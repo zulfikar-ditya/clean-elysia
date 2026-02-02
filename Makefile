@@ -1,4 +1,4 @@
-.PHONY: help dev build start lint format seed db-generate db-migrate db-push db-pull db-studio db-drop dev-worker build-worker start-worker dev-server build-server start-server dev-all build-all start-all
+.PHONY: help dev build start lint lint-fix format seed db-generate db-migrate db-push db-pull db-studio db-drop dev-worker build-worker start-worker dev-server build-server start-server dev-all build-all start-all
 
 # Default target
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "    build-all       - Build server and worker concurrently"
 	@echo "    start-all       - Run server and worker in production concurrently"
 	@echo "    lint            - Run ESLint"
+	@echo "    lint-fix        - Fix linting issues automatically"
 	@echo "    format          - Format code with Prettier"
 	@echo "    seed            - Run database seeder"
 	@echo ""
@@ -62,6 +63,9 @@ start-worker:
 
 lint:
 	bun run lint
+
+lint-fix:
+	bun run lint:fix
 
 format:
 	bun run format

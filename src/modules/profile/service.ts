@@ -1,7 +1,9 @@
 import {
+	Cache,
 	db,
 	UnprocessableEntityError,
 	UserInformation,
+	UserInformationCacheKey,
 	UserRepository,
 } from "@libs";
 import { NotFoundError } from "elysia";
@@ -39,6 +41,9 @@ export const ProfileService = {
 			);
 		});
 
-		return await UserRepository().UserInformation(user.id);
+		const userInformation = await UserRepository().UserInformation(userId);
+		await Cache.set(UserInformationCacheKey(userId), userInformation, 3600);
+
+		return userInformation;
 	},
 };
