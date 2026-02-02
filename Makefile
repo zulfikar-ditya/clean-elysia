@@ -74,10 +74,10 @@ db-seed:
 	bun run infra/seed/index.ts
 
 migrate-clickhouse:
-	bun run infra/clickhouse/scripts/migrate.ts migrate
+	bun run migrate:clickhouse
 
 migrate-clickhouse-status:
-	bun run infra/clickhouse/scripts/migrate.ts status
+	bun run migrate:clickhouse:status
 
 # Database commands
 db-generate:

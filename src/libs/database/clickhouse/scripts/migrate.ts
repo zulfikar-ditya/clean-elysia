@@ -11,7 +11,10 @@ interface IMigrationFile {
 
 class ClickHouseMigrator {
 	private client;
-	private migrationsDir = join(process.cwd(), "infra/clickhouse/migrations");
+	private migrationsDir = join(
+		process.cwd(),
+		"src/libs/database/clickhouse/migrations",
+	);
 
 	constructor() {
 		this.client = createClient({

@@ -23,9 +23,9 @@
 		"dev:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run dev:server\" \"bun run dev:worker\"",
 		"build:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run build:server\" \"bun run build:worker\"",
 		"start:all": "concurrently --names \"server,worker\" --prefix-colors \"blue,magenta\" \"bun run start:server\" \"bun run start:worker\"",
-		"db:postgres:seed": "bun run ./libs/database/postgres/seed/index.ts",
-		"migrate:clickhouse": "bun run ./libs/database/clickhouse/scripts/migrate.ts migrate",
-		"migrate:clickhouse:status": "bun run ./libs/database/clickhouse/scripts/migrate.ts status"
+		"db:postgres:seed": "bun run ./src/libs/database/postgres/seed/index.ts",
+		"migrate:clickhouse": "bun run ./src/libs/database/clickhouse/scripts/migrate.ts migrate",
+		"migrate:clickhouse:status": "bun run ./src/libs/database/clickhouse/scripts/migrate.ts status"
 	},
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",
@@ -67,11 +67,18 @@
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-prettier": "^5.5.5",
 		"eslint-plugin-simple-import-sort": "^12.1.1",
+		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
 		"tsx": "^4.21.0",
 		"typescript-eslint": "^8.54.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5.9.3"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"bun run lint:fix",
+			"bun run format"
+		]
 	}
 }
