@@ -2,6 +2,7 @@ export * from "./config/index";
 export * from "./database/index";
 export * from "./default/index";
 export * from "./errors/index";
+export * from "./mailer/index";
 export * from "./guards/index";
 export * from "./plugins/index";
 export * from "./repositories/index";

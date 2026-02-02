@@ -1,4 +1,5 @@
 import {
+	AuthMailService,
 	BadRequestError,
 	db,
 	emailVerifications,
@@ -97,7 +98,7 @@ export const AuthService = {
 			const hashedPassword = await Hash.generateHash(data.password);
 
 			await db.transaction(async (tx) => {
-				await UserRepository().create(
+				const newUser = await UserRepository().create(
 					{
 						name: data.name,
 						email: data.email,
@@ -106,8 +107,8 @@ export const AuthService = {
 					tx,
 				);
 
-				// const authMailService = new AuthMailService();
-				// await authMailService.sendVerificationEmail(newUser.id, tx);
+				const authMailService = new AuthMailService();
+				await authMailService.sendVerificationEmail(newUser.id, tx);
 			});
 		} catch (error) {
 			if (error instanceof BadRequestError) {
@@ -141,8 +142,8 @@ export const AuthService = {
 				return;
 			}
 
-			// const authMailService = new AuthMailService();
-			// await authMailService.sendVerificationEmail(user.id);
+			const authMailService = new AuthMailService();
+			await authMailService.sendVerificationEmail(user.id);
 		} catch (error) {
 			log.error({ error, email }, "Error resending verification email");
 		}
@@ -202,8 +203,8 @@ export const AuthService = {
 			return;
 		}
 
-		// const authMailService = new AuthMailService();
-		// await authMailService.sendResetPasswordEmail(user.id);
+		const authMailService = new AuthMailService();
+		await authMailService.sendResetPasswordEmail(user.id);
 	},
 
 	resetPassword: async (token: string, password: string): Promise<void> => {

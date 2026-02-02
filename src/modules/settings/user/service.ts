@@ -1,4 +1,5 @@
 import {
+	AuthMailService,
 	DatatableType,
 	db,
 	Hash,
@@ -58,15 +59,15 @@ export const UserService = {
 	},
 
 	sendEmailVerification: async (id: string) => {
-		await UserRepository().getDetail(id);
-		// const authMailService = new AuthMailService();
-		// await authMailService.sendVerificationEmail(user.id);
+		const user = await UserRepository().getDetail(id);
+		const authMailService = new AuthMailService();
+		await authMailService.sendVerificationEmail(user.id);
 	},
 
 	sendResetPasswordEmail: async (id: string) => {
-		await UserRepository().getDetail(id);
-		// const authMailService = new AuthMailService();
-		// await authMailService.sendResetPasswordEmail(user.id);
+		const user = await UserRepository().getDetail(id);
+		const authMailService = new AuthMailService();
+		await authMailService.sendResetPasswordEmail(user.id);
 	},
 
 	delete: async (id: string) => {

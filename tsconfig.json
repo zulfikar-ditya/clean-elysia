@@ -114,7 +114,8 @@
 			"@plugins": ["./src/libs/plugins", "./src/libs/plugins/*"],
 			"@repositories": ["./src/libs/repositories", "./src/libs/repositories/*"],
 			"@utils": ["./src/libs/utils", "./src/libs/utils/*"],
-			"@modules/*": ["./src/modules/*"]
+			"@modules/*": ["./src/modules/*"],
+			"@bull": ["./src/bull", "./src/bull/*"]
 		}
 	}
 }
