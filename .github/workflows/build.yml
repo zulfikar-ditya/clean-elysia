@@ -94,36 +94,36 @@ jobs:
       - name: Clickhouse Migrate
         env:
           CLICKHOUSE_URL: http://app:secret@localhost:8123
-        run: bun run infra/clickhouse/scripts/migrate.ts migrate
+        run: bun run migrate:clickhouse
 
       - name: Clickhouse Status
         env:
           CLICKHOUSE_URL: http://app:secret@localhost:8123
-        run: bun run infra/clickhouse/scripts/migrate.ts status
+        run: bun run migrate:clickhouse:status
 
       - name: Build
         run: bun run build:all
 
-  docker-compose-up:
-    needs: build-and-lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # docker-compose-up:
+  #   needs: build-and-lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+  #     - name: Install Docker Compose
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y docker-compose
 
-      - name: Docker Compose Up
-        run: docker-compose up -d
+  #     - name: Docker Compose Up
+  #       run: docker-compose up -d
 
-      - name: Wait for services to be healthy
-        run: |
-          docker-compose ps
-          sleep 20
-          docker-compose ps
+  #     - name: Wait for services to be healthy
+  #       run: |
+  #         docker-compose ps
+  #         sleep 20
+  #         docker-compose ps

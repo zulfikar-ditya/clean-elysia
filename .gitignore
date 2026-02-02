@@ -8,9 +8,6 @@
 # testing
 /coverage
 
-# build
-/dist
-
 # next.js
 /.next/
 /out/
@@ -44,7 +41,3 @@ yarn-error.log*
 **/*.log
 package-lock.json
 **/*.bun
-
-# editor
-.vscode
-.idea
