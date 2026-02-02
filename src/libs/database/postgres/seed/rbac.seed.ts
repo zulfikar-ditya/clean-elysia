@@ -1,4 +1,4 @@
-import { db, permissions, roles } from "infra/postgres";
+import { db, permissions, roles } from "@libs";
 
 export const RBACSeeder = () => {
 	return db.transaction(async (tx) => {

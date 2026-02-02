@@ -1,4 +1,4 @@
-import { AppConfig } from "@config";
+import { AppConfig } from "@libs";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";

@@ -1,8 +1,10 @@
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { db } from "@postgres/index";
-import { UserRepository } from "@postgres/repositories";
+import {
+	db,
+	UnprocessableEntityError,
+	UserInformation,
+	UserRepository,
+} from "@libs";
 import { NotFoundError } from "elysia";
-import { UnprocessableEntityError } from "packages/errors";
 
 export const ProfileService = {
 	updateProfile: async (

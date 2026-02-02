@@ -1,5 +1,4 @@
-import { StrongPassword } from "@default/strong-password";
-import { UserStatus } from "@postgres/schema";
+import { StrongPassword, UserStatus } from "@libs";
 import { t } from "elysia";
 
 export const UserStatusSchema = t.Enum(UserStatus);

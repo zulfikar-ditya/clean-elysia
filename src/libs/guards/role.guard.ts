@@ -1,5 +1,4 @@
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { ForbiddenError } from "packages/errors";
+import { ForbiddenError, UserInformation } from "@libs";
 
 export class RoleGuard {
 	static canActivate(user: UserInformation, requiredRoles: string[]): boolean {

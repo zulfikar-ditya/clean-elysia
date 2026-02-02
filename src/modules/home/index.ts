@@ -1,11 +1,14 @@
-// apps/apis/modules/home/index.ts
-import { baseApp } from "@app/apis/base";
-import { db, RedisClient } from "@infra/*";
-import { DateToolkit } from "@toolkit/date";
-import { ResponseToolkit, SuccessResponseSchema } from "@toolkit/response";
-import { AppConfig } from "config/app.config";
+import {
+	AppConfig,
+	DateToolkit,
+	db,
+	RedisClient,
+	ResponseToolkit,
+	SuccessResponseSchema,
+} from "@libs";
 import { Elysia, t } from "elysia";
 
+import { baseApp } from "../../base";
 import {
 	AppInfoSchema,
 	HealthCheckErrorSchema,

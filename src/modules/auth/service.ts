@@ -1,14 +1,14 @@
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { BadRequestError } from "@packages";
-import { AuthMailService } from "@packages/*";
-import { log } from "@packages/logger/logger";
-import { db } from "@postgres/index";
 import {
+	BadRequestError,
+	db,
+	emailVerifications,
 	ForgotPasswordRepository,
+	Hash,
+	log,
+	UserInformation,
 	UserRepository,
-} from "@postgres/repositories";
-import { emailVerifications, users } from "@postgres/schema";
-import { Hash } from "@security/hash";
+	users,
+} from "@libs";
 import { eq } from "drizzle-orm";
 
 export const AuthService = {
@@ -97,7 +97,7 @@ export const AuthService = {
 			const hashedPassword = await Hash.generateHash(data.password);
 
 			await db.transaction(async (tx) => {
-				const newUser = await UserRepository().create(
+				await UserRepository().create(
 					{
 						name: data.name,
 						email: data.email,
@@ -106,8 +106,8 @@ export const AuthService = {
 					tx,
 				);
 
-				const authMailService = new AuthMailService();
-				await authMailService.sendVerificationEmail(newUser.id, tx);
+				// const authMailService = new AuthMailService();
+				// await authMailService.sendVerificationEmail(newUser.id, tx);
 			});
 		} catch (error) {
 			if (error instanceof BadRequestError) {
@@ -141,8 +141,8 @@ export const AuthService = {
 				return;
 			}
 
-			const authMailService = new AuthMailService();
-			await authMailService.sendVerificationEmail(user.id);
+			// const authMailService = new AuthMailService();
+			// await authMailService.sendVerificationEmail(user.id);
 		} catch (error) {
 			log.error({ error, email }, "Error resending verification email");
 		}
@@ -202,8 +202,8 @@ export const AuthService = {
 			return;
 		}
 
-		const authMailService = new AuthMailService();
-		await authMailService.sendResetPasswordEmail(user.id);
+		// const authMailService = new AuthMailService();
+		// await authMailService.sendResetPasswordEmail(user.id);
 	},
 
 	resetPassword: async (token: string, password: string): Promise<void> => {

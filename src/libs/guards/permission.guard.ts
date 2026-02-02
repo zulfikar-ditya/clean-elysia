@@ -1,3 +1,5 @@
+import { ForbiddenError, UserInformation } from "@libs";
+
 export class PermissionGuard {
 	static canActivate(
 		user: UserInformation,

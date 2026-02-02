@@ -1,6 +1,9 @@
-import { DatatableType, SortDirection } from "@app/apis/types/datatable";
-import { paginationLength } from "@default/pagination-length";
-import { defaultSort } from "@default/sort";
+import {
+	DatatableType,
+	defaultSort,
+	paginationLength,
+	SortDirection,
+} from "@libs";
 import { PgColumn } from "drizzle-orm/pg-core";
 
 // Define the query type that includes filter parameters

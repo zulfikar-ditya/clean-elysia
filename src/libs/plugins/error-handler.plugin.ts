@@ -1,13 +1,12 @@
-import { Elysia } from "elysia";
-
 import {
 	BadRequestError,
 	ForbiddenError,
-	NotFoundError,
 	RateLimitError,
 	UnauthorizedError,
 	UnprocessableEntityError,
-} from "../errors";
+} from "@errors";
+import { Elysia, NotFoundError } from "elysia";
+
 import { LoggerPlugin } from "./logger.plugin";
 
 // Type definitions for Elysia validation errors

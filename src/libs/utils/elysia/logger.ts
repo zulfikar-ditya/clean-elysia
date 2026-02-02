@@ -1,5 +1,5 @@
-import { LoggerOptions } from "@bogeychan/elysia-logger/types";
-import { AppConfig } from "@config";
+import { LoggerOptions } from "@bogeychan/elysia-logger/dist/types";
+import { AppConfig } from "@libs";
 import { destination, Logger, pino } from "pino";
 
 const isProd = AppConfig.APP_ENV !== "development";

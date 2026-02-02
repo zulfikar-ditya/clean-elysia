@@ -1,5 +1,4 @@
-import { UserInformationTypeBox } from "@app/apis/types/UserInformation";
-import { StrongPassword } from "@default/strong-password";
+import { StrongPassword, UserInformationTypeBox } from "@libs";
 import { t } from "elysia";
 
 export const LoginSchema = t.Object({

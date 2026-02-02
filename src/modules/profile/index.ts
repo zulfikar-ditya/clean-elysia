@@ -1,11 +1,10 @@
-import { UserInformationTypeBox } from "@app/apis/types/UserInformation";
-import { Cache, UserInformationCacheKey } from "@cache/*";
-import { AuthPlugin } from "@packages";
 import {
+	AuthPlugin,
 	CommonResponseSchemas,
 	ResponseToolkit,
 	SuccessResponseSchema,
-} from "@toolkit/response";
+	UserInformationTypeBox,
+} from "@libs";
 import Elysia, { t } from "elysia";
 
 import { ProfileService } from "./service";
@@ -46,10 +45,6 @@ export const ProfileModule = new Elysia({
 				name: body.name,
 				email: body.email,
 			});
-
-			// Update cache
-			const cacheKey = UserInformationCacheKey(user.id);
-			await Cache.set(cacheKey, updatedProfile, 3600);
 
 			return ResponseToolkit.success(
 				updatedProfile,

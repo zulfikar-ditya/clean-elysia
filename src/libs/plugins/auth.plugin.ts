@@ -1,10 +1,11 @@
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { Cache, UserInformationCacheKey } from "@cache/*";
 import bearer from "@elysiajs/bearer";
 import jwt from "@elysiajs/jwt";
-import { UnauthorizedError } from "@packages";
-import { UserRepository } from "@postgres/index";
-import { JWT_CONFIG } from "config/jwt.config";
+import {
+	JWT_CONFIG,
+	UnauthorizedError,
+	UserInformation,
+	UserRepository,
+} from "@libs";
 import Elysia from "elysia";
 
 export const AuthPlugin = new Elysia({ name: "auth" })
@@ -33,14 +34,17 @@ export const AuthPlugin = new Elysia({ name: "auth" })
 				throw new UnauthorizedError("Invalid user ID in token");
 			}
 
-			user = await Cache.get<UserInformation>(UserInformationCacheKey(userId));
-
+			user = await UserRepository().UserInformation(userId);
 			if (!user) {
-				user = await UserRepository().UserInformation(userId);
-				if (user) {
-					await Cache.set(UserInformationCacheKey(userId), user, 3600);
-				}
+				throw new UnauthorizedError("User not found");
 			}
+
+			// user = await Cache.get<UserInformation>(UserInformationCacheKey(userId));			// if (!user) {
+			// 	user = await UserRepository().UserInformation(userId);
+			// 	if (user) {
+			// 		await Cache.set(UserInformationCacheKey(userId), user, 3600);
+			// 	}
+			// }
 		} catch {
 			throw new UnauthorizedError("Invalid authentication token");
 		}

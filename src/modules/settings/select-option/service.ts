@@ -1,5 +1,4 @@
-import { PermissionRepository } from "@postgres/repositories";
-import { RoleRepository } from "@postgres/repositories/role.repository";
+import { PermissionRepository, RoleRepository } from "@libs";
 
 export const SelectOptionService = {
 	permissionSelect: async () => {

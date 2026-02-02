@@ -1,10 +1,13 @@
-import { DatatableType } from "@app/apis/types/datatable";
-import { PaginationResponse } from "@app/apis/types/pagination";
-import { AuthMailService } from "@packages/*";
-import { db } from "@postgres/index";
-import { UserList, UserRepository } from "@postgres/repositories";
-import { users, UserStatusEnum } from "@postgres/schema";
-import { Hash } from "@security/hash";
+import {
+	DatatableType,
+	db,
+	Hash,
+	PaginationResponse,
+	UserList,
+	UserRepository,
+	users,
+	UserStatusEnum,
+} from "@libs";
 import { eq } from "drizzle-orm";
 
 export const UserService = {
@@ -55,15 +58,15 @@ export const UserService = {
 	},
 
 	sendEmailVerification: async (id: string) => {
-		const user = await UserRepository().getDetail(id);
-		const authMailService = new AuthMailService();
-		await authMailService.sendVerificationEmail(user.id);
+		await UserRepository().getDetail(id);
+		// const authMailService = new AuthMailService();
+		// await authMailService.sendVerificationEmail(user.id);
 	},
 
 	sendResetPasswordEmail: async (id: string) => {
-		const user = await UserRepository().getDetail(id);
-		const authMailService = new AuthMailService();
-		await authMailService.sendResetPasswordEmail(user.id);
+		await UserRepository().getDetail(id);
+		// const authMailService = new AuthMailService();
+		// await authMailService.sendResetPasswordEmail(user.id);
 	},
 
 	delete: async (id: string) => {

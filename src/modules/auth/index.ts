@@ -1,15 +1,14 @@
-import { baseApp } from "@app/apis/base";
-import { UserInformation } from "@app/apis/types/UserInformation";
-import { Cache, UserInformationCacheKey } from "@cache/*";
 import { jwt } from "@elysiajs/jwt";
 import {
 	CommonResponseSchemas,
+	JWT_CONFIG,
 	ResponseToolkit,
 	SuccessResponseSchema,
-} from "@toolkit/response";
-import { JWT_CONFIG } from "config/jwt.config";
+	UserInformation,
+} from "@libs";
 import Elysia, { t } from "elysia";
 
+import { baseApp } from "../../base";
 import {
 	ForgotPasswordSchema,
 	LoginResponseSchema,
@@ -45,8 +44,6 @@ export const AuthModule = new Elysia({
 			);
 
 			const token = await jwt.sign({ id: user.id });
-			const cacheKey = UserInformationCacheKey(user.id);
-			await Cache.set(cacheKey, user, 3600);
 
 			set.status = 200;
 			return ResponseToolkit.success(

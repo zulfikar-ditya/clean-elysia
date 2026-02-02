@@ -1,6 +1,5 @@
 import { wrap } from "@bogeychan/elysia-logger";
-
-import { log } from "..";
+import { log } from "@utils";
 
 /**
  * Elysia plugin: exposes ctx.log, auto-logs requests,

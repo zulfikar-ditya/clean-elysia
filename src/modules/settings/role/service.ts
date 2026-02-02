@@ -1,9 +1,9 @@
-import { DatatableType } from "@app/apis/types/datatable";
-import { PaginationResponse } from "@app/apis/types/pagination";
 import {
+	DatatableType,
+	PaginationResponse,
 	RoleList,
 	RoleRepository,
-} from "@postgres/repositories/role.repository";
+} from "@libs";
 
 export const RoleService = {
 	findAll: async (

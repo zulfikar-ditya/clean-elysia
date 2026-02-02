@@ -1,6 +1,5 @@
-import { Hash } from "@security/hash";
+import { db, Hash, roles, userRoles, users } from "@libs";
 import { eq } from "drizzle-orm";
-import { db, roles, userRoles, users } from "infra/postgres/index";
 
 export const UserSeeder = async () => {
 	await db.transaction(async (tx) => {
@@ -42,17 +41,17 @@ export const UserSeeder = async () => {
 			.where(eq(roles.name, "admin"))
 			.limit(1);
 
-		if (superUserRole.at(0) && superUser.at(0)) {
+		if (superUserRole[0] && superUser[0]) {
 			await tx.insert(userRoles).values({
-				user_id: superUser.at(0)!.id,
-				role_id: superUserRole.at(0)!.id,
+				user_id: superUser[0].id,
+				role_id: superUserRole[0].id,
 			});
 		}
 
-		if (adminRole.at(0) && admin.at(0)) {
+		if (adminRole[0] && admin[0]) {
 			await tx.insert(userRoles).values({
-				user_id: admin.at(0)!.id,
-				role_id: adminRole.at(0)!.id,
+				user_id: admin[0].id,
+				role_id: adminRole[0].id,
 			});
 		}
 	});

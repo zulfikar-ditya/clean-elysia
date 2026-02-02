@@ -1,8 +1,6 @@
-import { AppConfig } from "@config";
-import { DocsPlugin, log } from "@packages";
+import { AppConfig, DocsPlugin } from "@libs";
+import { bootstraps } from "@modules";
 import { Elysia } from "elysia";
-
-import { bootstraps } from "./modules/index";
 
 const app = new Elysia()
 	.use(DocsPlugin)
@@ -11,4 +9,5 @@ const app = new Elysia()
 
 export default app.fetch;
 
-log.info({}, `application running on port ${AppConfig.APP_PORT}`);
+// eslint-disable-next-line no-console
+console.log("Api server started on port: ", AppConfig.APP_PORT);

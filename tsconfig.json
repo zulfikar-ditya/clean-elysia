@@ -106,14 +106,15 @@
 			// "@": ["./src", "./src/*"],
 			"@libs": ["./src/libs", "./src/libs/*"],
 			"@modules": ["./src/modules", "./src/modules/*"],
-			"@config": ["./libs/config", "./libs/config/*"],
-			"@database": ["./libs/database", "./libs/database/*"],
-			"@default": ["./libs/default", "./libs/default/*"],
-			"@errors": ["./libs/errors", "./libs/errors/*"],
-			"@guards": ["./libs/guards", "./libs/guards/*"],
-			"@plugins": ["./libs/plugins", "./libs/plugins/*"],
-			"@repositories": ["./libs/repositories", "./libs/repositories/*"],
-			"@utils": ["./src/utils", "./src/utils/*"]
+			"@config": ["./src/libs/config", "./src/libs/config/*"],
+			"@database": ["./src/libs/database", "./src/libs/database/*"],
+			"@default": ["./src/libs/default", "./src/libs/default/*"],
+			"@errors": ["./src/libs/errors", "./src/libs/errors/*"],
+			"@guards": ["./src/libs/guards", "./src/libs/guards/*"],
+			"@plugins": ["./src/libs/plugins", "./src/libs/plugins/*"],
+			"@repositories": ["./src/libs/repositories", "./src/libs/repositories/*"],
+			"@utils": ["./src/libs/utils", "./src/libs/utils/*"],
+			"@modules/*": ["./src/modules/*"]
 		}
 	}
 }
