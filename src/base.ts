@@ -3,7 +3,7 @@ import {
 	LoggerPlugin,
 	RequestPlugin,
 	SecurityPlugin,
-} from "@libs";
+} from "@plugins";
 import { Elysia } from "elysia";
 
 export const baseApp = new Elysia({ name: "base-app" })

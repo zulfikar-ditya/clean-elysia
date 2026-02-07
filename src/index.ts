@@ -1,5 +1,6 @@
-import { AppConfig, DocsPlugin } from "@libs";
+import { AppConfig } from "@config";
 import { bootstraps } from "@modules";
+import { DocsPlugin } from "@plugins";
 import { Elysia } from "elysia";
 
 const app = new Elysia()
