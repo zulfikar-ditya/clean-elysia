@@ -1,5 +1,6 @@
 import { AppConfig, MailConfig } from "@config";
-import { EmailOptions, log } from "@libs";
+import { EmailOptions } from "@types";
+import { log } from "@utils";
 import fs from "fs";
 import path from "path";
 
@@ -13,8 +14,8 @@ export const EmailService = {
 		if (options.template) {
 			try {
 				const templatePath = path.join(
-					__dirname,
-					"templates",
+					process.cwd(),
+					"src/libs/mailer/templates",
 					`${options.template}.html`,
 				);
 				htmlContent = fs.readFileSync(templatePath, "utf-8");

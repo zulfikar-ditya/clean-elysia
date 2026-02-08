@@ -85,7 +85,14 @@ export default tseslint.config(
 			// ---- General JS Rules ----
 			//
 			"no-unused-expressions": "error",
-			"no-unused-vars": "error",
+			"no-unused-vars": [
+				"error",
+				{
+					args: "after-used",
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+				},
+			],
 			"no-console": "warn",
 			"no-undef": "off",
 			"no-redeclare": "warn",

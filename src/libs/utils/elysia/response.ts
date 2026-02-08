@@ -6,14 +6,14 @@ import { t, TSchema } from "elysia";
 
 export const SuccessResponseSchema = <T extends TSchema>(dataSchema: T) =>
 	t.Object({
-		status: t.Number(),
+		status: t.Literal(200),
 		success: t.Literal(true),
 		message: t.String(),
 		data: dataSchema,
 	});
 
 export const ErrorResponseSchema = t.Object({
-	status: t.Number(),
+	status: t.Literal(400),
 	success: t.Literal(false),
 	message: t.String(),
 	data: t.Null(),
@@ -32,7 +32,7 @@ export const BadRequestResponseSchema = t.Object({
 });
 
 export const ValidationErrorResponseSchema = t.Object({
-	status: t.Number(),
+	status: t.Literal(422),
 	success: t.Literal(false),
 	message: t.String(),
 	errors: t.Array(
@@ -45,7 +45,7 @@ export const ValidationErrorResponseSchema = t.Object({
 
 export const PaginatedResponseSchema = <T extends TSchema>(itemSchema: T) =>
 	t.Object({
-		status: t.Number(),
+		status: t.Literal(200),
 		success: t.Literal(true),
 		message: t.String(),
 		data: t.Object({
@@ -62,22 +62,41 @@ export const PaginatedResponseSchema = <T extends TSchema>(itemSchema: T) =>
 // RESPONSE TYPES
 // ============================================
 
-export type SuccessResponse<T> = {
-	status: number;
+export type SuccessResponse200<T> = {
+	status: 200;
 	success: true;
 	message: string;
 	data: T;
 };
 
+export type SuccessResponse201<T> = {
+	status: 201;
+	success: true;
+	message: string;
+	data: T;
+};
+
+export type SuccessResponse202<T> = {
+	status: 202;
+	success: true;
+	message: string;
+	data: T;
+};
+
+export type SuccessResponse<T> =
+	| SuccessResponse200<T>
+	| SuccessResponse201<T>
+	| SuccessResponse202<T>;
+
 export type ErrorResponse = {
-	status: number;
+	status: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 503;
 	success: false;
 	message: string;
 	data: null;
 };
 
 export type ValidationErrorResponse = {
-	status: number;
+	status: 422;
 	success: false;
 	message: string;
 	errors: Array<{
@@ -87,7 +106,7 @@ export type ValidationErrorResponse = {
 };
 
 export type PaginatedResponse<T> = {
-	status: number;
+	status: 200;
 	success: true;
 	message: string;
 	data: {
@@ -106,6 +125,33 @@ export type PaginatedResponse<T> = {
 
 export class ResponseToolkit {
 	/**
+	 * Create a success response with status 200
+	 */
+	static success<T>(
+		_data: T,
+		_message?: string,
+		_status?: 200,
+	): SuccessResponse200<T>;
+
+	/**
+	 * Create a success response with status 201
+	 */
+	static success<T>(
+		_data: T,
+		_message: string,
+		_status: 201,
+	): SuccessResponse201<T>;
+
+	/**
+	 * Create a success response with status 202
+	 */
+	static success<T>(
+		_data: T,
+		_message: string,
+		_status: 202,
+	): SuccessResponse202<T>;
+
+	/**
 	 * Create a success response
 	 * @param data - The response data
 	 * @param message - Success message (default: "Success")
@@ -114,10 +160,26 @@ export class ResponseToolkit {
 	static success<T>(
 		data: T,
 		message: string = "Success",
-		status: number = 200,
-	): SuccessResponse<T> {
+		status: 200 | 201 | 202 = 200,
+	): SuccessResponse200<T> | SuccessResponse201<T> | SuccessResponse202<T> {
+		if (status === 200) {
+			return {
+				status: 200,
+				success: true,
+				message,
+				data,
+			};
+		}
+		if (status === 201) {
+			return {
+				status: 201,
+				success: true,
+				message,
+				data,
+			};
+		}
 		return {
-			status,
+			status: 202,
 			success: true,
 			message,
 			data,
@@ -139,7 +201,7 @@ export class ResponseToolkit {
 			totalCount: number;
 		},
 		message: string = "Data retrieved successfully",
-		status: number = 200,
+		status: 200 = 200,
 	): PaginatedResponse<T> {
 		return {
 			status,
@@ -157,7 +219,10 @@ export class ResponseToolkit {
 	 * @param message - Error message
 	 * @param status - HTTP status code (default: 400)
 	 */
-	static error(message: string, status: number = 400): ErrorResponse {
+	static error(
+		message: string,
+		status: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 503 = 400,
+	): ErrorResponse {
 		return {
 			status,
 			success: false,
@@ -175,7 +240,7 @@ export class ResponseToolkit {
 	static validationError(
 		errors: Array<{ field: string; message: string }>,
 		message: string = "Validation failed",
-		status: number = 422,
+		status: 422 = 422,
 	): ValidationErrorResponse {
 		return {
 			status,
@@ -243,7 +308,7 @@ export class ResponseToolkit {
 	static created<T>(
 		data: T,
 		message: string = "Resource created successfully",
-	): SuccessResponse<T> {
+	): SuccessResponse201<T> {
 		return this.success(data, message, 201);
 	}
 
@@ -262,7 +327,7 @@ export class ResponseToolkit {
 	static accepted<T>(
 		data: T,
 		message: string = "Request accepted for processing",
-	): SuccessResponse<T> {
+	): SuccessResponse202<T> {
 		return this.success(data, message, 202);
 	}
 }

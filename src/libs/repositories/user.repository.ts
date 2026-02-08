@@ -1,22 +1,17 @@
+import { db, DbTransaction, userRoles, users, UserStatusEnum } from "@database";
+import { defaultSort } from "@default";
+import { BadRequestError, UnauthorizedError } from "@errors";
 import {
-	BadRequestError,
 	DatatableType,
-	db,
-	DbTransaction,
-	defaultSort,
-	Hash,
 	PaginationResponse,
 	SortDirection,
-	UnauthorizedError,
 	UserCreate,
 	UserDetail,
 	UserForAuth,
 	UserInformation,
 	UserList,
-	userRoles,
-	users,
-	UserStatusEnum,
-} from "@libs";
+} from "@types";
+import { Hash } from "@utils";
 import {
 	and,
 	asc,
@@ -485,7 +480,7 @@ export const UserRepository = () => {
 		findByEmail: async (
 			email: string,
 			tx?: DbTransaction,
-		): Promise<UserForAuth> => {
+		): Promise<UserForAuth | null> => {
 			const database = tx || dbInstance;
 			const user = await database.query.users.findFirst({
 				where: and(eq(users.email, email), isNull(users.deleted_at)),
@@ -500,12 +495,7 @@ export const UserRepository = () => {
 			});
 
 			if (!user) {
-				throw new BadRequestError("Validation error", [
-					{
-						field: "email",
-						message: "Invalid email or password",
-					},
-				]);
+				return null;
 			}
 
 			return user;
