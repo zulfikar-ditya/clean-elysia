@@ -1,3 +1,4 @@
+import { RoleGuard } from "@guards";
 import { AuthPlugin } from "@plugins";
 import { ResponseToolkit } from "@utils";
 import Elysia from "elysia";
@@ -27,6 +28,9 @@ export const SelectOptionModule = new Elysia({
 				summary: "Get permission select options",
 				description: "Retrieve select options for permissions.",
 			},
+			beforeHandle: function ({ user }) {
+				RoleGuard.canActivate(user, ["superuser"]);
+			},
 		},
 	)
 	.get(
@@ -43,6 +47,9 @@ export const SelectOptionModule = new Elysia({
 			detail: {
 				summary: "Get role select options",
 				description: "Retrieve select options for roles.",
+			},
+			beforeHandle: function ({ user }) {
+				RoleGuard.canActivate(user, ["superuser"]);
 			},
 		},
 	);

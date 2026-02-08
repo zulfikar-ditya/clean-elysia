@@ -1,16 +1,3 @@
-// import { sendEmailQueue } from "@app/worker/queue/send-email.queue";
-// import { AppConfig } from "@config";
-// import { verificationTokenLifetime } from "@default/token-lifetime";
-// import { log } from "@packages";
-// import { db } from "@postgres/index";
-// import {
-// 	DbTransaction,
-// 	ForgotPasswordRepository,
-// 	UserRepository,
-// } from "@postgres/repositories";
-// import { emailVerifications } from "@postgres/schema";
-// import { StrToolkit } from "@toolkit/string";
-
 import { sendEmailQueue } from "@bull";
 import { AppConfig } from "@config";
 import { db, DbTransaction, emailVerifications } from "@database";
@@ -34,7 +21,7 @@ export class AuthMailService {
 		await sendEmailQueue.add("send-email", {
 			subject: "Email verification",
 			to: user.email,
-			template: "/auth/email-verification",
+			template: "auth/email-verification",
 			variables: {
 				user_id: user.id,
 				user_name: user.name,
@@ -61,7 +48,7 @@ export class AuthMailService {
 		await sendEmailQueue.add("send-email", {
 			subject: "Reset Password",
 			to: user.email,
-			template: "/auth/forgot-password",
+			template: "auth/forgot-password",
 			variables: {
 				user_id: user.id,
 				user_name: user.name,

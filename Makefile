@@ -44,7 +44,7 @@ format:
 	bun run format
 
 db-seed:
-	bun run infra/seed/index.ts
+	bun run ./src/libs/database/postgres/seed/index.ts
 
 migrate-clickhouse:
 	bun run migrate:clickhouse

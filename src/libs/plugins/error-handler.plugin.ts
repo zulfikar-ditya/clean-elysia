@@ -78,11 +78,11 @@ export const ErrorHandlerPlugin = new Elysia({
 		if (code === "VALIDATION") {
 			set.status = 422;
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 			const validationError = error as any;
 			const errors: { field: string; message: string }[] = [];
 
-			if (validationError.all && typeof validationError.all === "object") {
+			if (Array.isArray(validationError.all)) {
 				for (const err of validationError.all) {
 					errors.push({
 						field: err.path?.replace(/^\//, "") || "unknown",
@@ -92,12 +92,25 @@ export const ErrorHandlerPlugin = new Elysia({
 			}
 
 			if (!errors.length && validationError.valueError) {
+				const valueErrors = Array.isArray(validationError.valueError)
+					? validationError.valueError
+					: [validationError.valueError];
+
+				for (const err of valueErrors) {
+					errors.push({
+						field: err.path?.replace(/^\//, "") || "unknown",
+						message: err.message || "Validation failed",
+					});
+				}
+			}
+
+			if (!errors.length && validationError.message) {
 				errors.push({
-					field:
-						validationError.valueError.path?.replace(/^\//, "") || "unknown",
-					message: validationError.valueError.message || "Validation failed",
+					field: "general",
+					message: validationError.message,
 				});
 			}
+			/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 
 			return {
 				status: 422,
