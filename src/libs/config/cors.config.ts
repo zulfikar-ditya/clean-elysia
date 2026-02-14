@@ -1,3 +1,5 @@
+import { env } from "./env.config";
+
 interface ICorsConfig {
 	origin: string | string[];
 	methods: string[];
@@ -8,7 +10,7 @@ interface ICorsConfig {
 }
 
 export const CORSConfig: ICorsConfig = {
-	origin: process.env.ALLOWED_HOST ? process.env.ALLOWED_HOST.split(",") : "*",
+	origin: env.ALLOWED_HOST ? env.ALLOWED_HOST.split(",") : "*",
 	methods: ["GET", "POST", "PATCH", "DELETE"],
 	allowedHeaders: ["Content-Type", "Authorization"],
 	credentials: false,

@@ -1,10 +1,6 @@
 import { AuthPlugin } from "@plugins";
 import { UserInformationTypeBox } from "@types";
-import {
-	CommonResponseSchemas,
-	ResponseToolkit,
-	SuccessResponseSchema,
-} from "@utils";
+import { commonResponse, ResponseToolkit } from "@utils";
 import Elysia, { t } from "elysia";
 
 import { ProfileService } from "./service";
@@ -23,10 +19,7 @@ export const ProfileModule = new Elysia({
 			return ResponseToolkit.success(user, "Profile retrieved successfully");
 		},
 		{
-			response: {
-				200: SuccessResponseSchema(UserInformationTypeBox),
-				401: CommonResponseSchemas[401],
-			},
+			response: commonResponse(UserInformationTypeBox, { include: [200, 401] }),
 			detail: {
 				summary: "Get current user profile",
 				description: "Retrieve the authenticated user's profile information",
@@ -62,11 +55,9 @@ export const ProfileModule = new Elysia({
 					maxLength: 255,
 				}),
 			}),
-			response: {
-				200: SuccessResponseSchema(UserInformationTypeBox),
-				401: CommonResponseSchemas[401],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(UserInformationTypeBox, {
+				include: [200, 401, 422],
+			}),
 			detail: {
 				summary: "Update user profile",
 				description: "Update the authenticated user's profile information",

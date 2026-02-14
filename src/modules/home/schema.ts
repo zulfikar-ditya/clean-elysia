@@ -1,17 +1,38 @@
 import { t } from "elysia";
 
 export const AppInfoSchema = t.Object({
-	app_name: t.String(),
-	app_env: t.String(),
-	date: t.String(),
+	app_name: t.String({
+		description: "Application name",
+		examples: ["clean-elysia"],
+	}),
+	app_env: t.String({
+		description: "Current environment",
+		examples: ["development"],
+	}),
+	date: t.String({
+		description: "Current server date",
+		examples: ["2024-01-15T10:30:00Z"],
+	}),
 });
 
 export const HealthCheckDataSchema = t.Object({
-	status: t.String(),
-	timestamp: t.String(),
+	status: t.String({
+		description: "Overall health status",
+		examples: ["healthy"],
+	}),
+	timestamp: t.String({
+		description: "Check timestamp",
+		examples: ["2024-01-15T10:30:00Z"],
+	}),
 	services: t.Object({
-		database: t.String(),
-		redis: t.String(),
+		database: t.String({
+			description: "Database connection status",
+			examples: ["connected"],
+		}),
+		redis: t.String({
+			description: "Redis connection status",
+			examples: ["connected"],
+		}),
 	}),
 });
 

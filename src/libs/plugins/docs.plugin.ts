@@ -6,6 +6,7 @@ export const DocsPlugin = new Elysia({ name: "docs" }).use(
 	openapi({
 		path: "/docs",
 		enabled: AppConfig.APP_ENV !== "production",
+		provider: "scalar",
 		documentation: {
 			info: {
 				title: `API ${AppConfig.APP_NAME}`,

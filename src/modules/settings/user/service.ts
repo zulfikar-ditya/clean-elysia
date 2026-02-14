@@ -1,12 +1,7 @@
-import { db, users } from "@database";
+import { db, users, UserStatusEnum } from "@database";
 import { AuthMailService } from "@mailer";
 import { UserRepository } from "@repositories";
-import {
-	DatatableType,
-	PaginationResponse,
-	UserList,
-	UserStatusEnum,
-} from "@types";
+import { DatatableType, PaginationResponse, UserList } from "@types";
 import { Hash } from "@utils";
 import { eq } from "drizzle-orm";
 

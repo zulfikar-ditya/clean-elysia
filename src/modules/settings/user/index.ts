@@ -2,13 +2,12 @@ import { PermissionGuard, RoleGuard } from "@guards";
 import { AuthPlugin } from "@plugins";
 import { DatatableQueryParams } from "@types";
 import {
-	CommonResponseSchemas,
+	commonPaginatedResponse,
+	commonResponse,
 	DatatableToolkit,
-	PaginatedResponseSchema,
 	ResponseToolkit,
-	SuccessResponseSchema,
 } from "@utils";
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 
 import {
 	UserCreateSchema,
@@ -49,13 +48,9 @@ export const UserModule = new Elysia({
 				description:
 					"Retrieve a list of all users. Requires 'user list' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				200: PaginatedResponseSchema(UserListSchema),
-			},
+			response: commonPaginatedResponse(UserListSchema, {
+				include: [200, 400, 401, 403, 500],
+			}),
 		},
 	)
 	.post(
@@ -74,13 +69,9 @@ export const UserModule = new Elysia({
 				description:
 					"Create a new user with the provided details. Requires 'user create' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				201: CommonResponseSchemas[201],
-			},
+			response: commonResponse(t.Null(), {
+				include: [201, 400, 401, 403, 500],
+			}),
 		},
 	)
 	.get(
@@ -102,14 +93,9 @@ export const UserModule = new Elysia({
 				description:
 					"Retrieve details of a specific user by ID. Requires 'user detail' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(UserDetailSchema),
-			},
+			response: commonResponse(UserDetailSchema, {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.patch(
@@ -128,14 +114,9 @@ export const UserModule = new Elysia({
 				description:
 					"Update the details of an existing user by ID. Requires 'user edit' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: CommonResponseSchemas[200],
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.post(
@@ -158,14 +139,9 @@ export const UserModule = new Elysia({
 				description:
 					"Reset the password of an existing user by ID. Requires 'superuser' role.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: CommonResponseSchemas[200],
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.post(
@@ -187,14 +163,9 @@ export const UserModule = new Elysia({
 				description:
 					"Send an email verification to the user by ID. Requires 'user create' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: CommonResponseSchemas[200],
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.post(
@@ -216,14 +187,9 @@ export const UserModule = new Elysia({
 				description:
 					"Send a reset password email to the user by ID. Requires 'user create' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: CommonResponseSchemas[200],
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.delete(
@@ -241,13 +207,8 @@ export const UserModule = new Elysia({
 				description:
 					"Delete an existing user by ID. Requires 'user delete' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: CommonResponseSchemas[200],
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	);

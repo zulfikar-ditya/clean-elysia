@@ -1,5 +1,7 @@
+import { env } from "./env.config";
+
 export const JWT_CONFIG = {
 	name: "jwt",
-	secret: process.env.JWT_SECRET || "your-secret-key",
+	secret: env.JWT_SECRET,
 	exp: "7d",
 };

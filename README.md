@@ -1,192 +1,257 @@
-# Clean Architecture Elysia
+# Clean Elysia
 
-A production-ready Clean Architecture implementation using Elysia.js with Bun runtime, featuring background job processing, caching, and robust database operations.
+A clean architecture backend API built with Elysia.js, TypeScript, and Bun.
+
+## Features
+
+- Clean architecture pattern with separation of concerns
+- Elysia.js web framework with TypeBox validation
+- PostgreSQL with Drizzle ORM
+- Redis for caching and rate limiting
+- BullMQ for background job processing
+- ClickHouse for analytics (optional)
+- Comprehensive authentication and authorization (RBAC)
+- API documentation with OpenAPI and Scalar
+- Docker support
 
 ## Tech Stack
 
-- Elysia.js - Fast and ergonomic web framework for Bun
-- Bun - JavaScript runtime and toolkit
-- BullMQ - Redis-based queue for handling distributed jobs
-- Redis - In-memory data store for caching and queue backend
-- Drizzle ORM - TypeScript ORM with full type safety
-- PostgreSQL - Primary relational database
-- TypeScript - Type-safe development
-
-## Project Structure
-
-```
-src/
-├── base.ts                    # Base Elysia app with core plugins
-├── index.ts                   # Application entry point
-├── bull/                      # Background job processing
-│   ├── queue/                 # Queue definitions
-│   └── worker/                # Worker implementations
-├── libs/                      # Shared libraries and utilities
-│   ├── config/                # Configuration files
-│   ├── database/              # Database clients (PostgreSQL, Redis, ClickHouse)
-│   ├── errors/                # Custom error classes
-│   ├── guards/                # Authorization guards
-│   ├── mailer/                # Email service
-│   ├── plugins/               # Elysia plugins
-│   ├── repositories/          # Data access layer
-│   ├── types/                 # TypeScript type definitions
-│   └── utils/                 # Utility functions
-└── modules/                   # Feature modules
-    ├── auth/                  # Authentication module
-    ├── profile/               # User profile module
-    └── settings/              # Settings module
-```
+- **Runtime**: Bun
+- **Framework**: Elysia.js
+- **Language**: TypeScript
+- **Databases**: PostgreSQL, Redis, ClickHouse
+- **ORM**: Drizzle
+- **Queue**: BullMQ
+- **Validation**: TypeBox
+- **API Docs**: OpenAPI + Scalar
 
 ## Prerequisites
 
-- Bun v1.0.0 or higher
-- PostgreSQL 14 or higher
-- Redis 6 or higher
-- Docker and Docker Compose (optional)
+- Bun 1.x or higher
+- PostgreSQL
+- Redis
+- Docker (optional)
 
 ## Installation
 
 Install dependencies:
 
-```bash
+```sh
 bun install
 ```
 
 ## Configuration
 
-Create a `.env` file in the root directory:
+Copy the example environment file and configure your environment variables:
 
-```env
-# Application
-APP_PORT=3000
-APP_ENV=development
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_database
-DB_USER=your_user
-DB_PASSWORD=your_password
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
-
-# JWT
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=7d
-
-# Mail
-MAIL_HOST=smtp.example.com
-MAIL_PORT=587
-MAIL_USER=your_email
-MAIL_PASSWORD=your_password
-MAIL_FROM=noreply@example.com
+```sh
+cp .env.example .env
 ```
+
+Configure the following environment variables:
+
+- Database connections (PostgreSQL, Redis, ClickHouse)
+- Mail settings
+- JWT secrets
+- Application settings
+
+See [Configuration Documentation](./docs/CONFIGURATION.md) for detailed reference.
 
 ## Database Setup
 
-Run database migrations:
+Generate and run PostgreSQL migrations:
 
-```bash
-bun run drizzle-kit generate
-bun run drizzle-kit migrate
+```sh
+bun run db:generate
+bun run db:migrate
 ```
 
-Seed the database (optional):
+Seed the database with initial data:
 
-```bash
-bun run db:postgres:seed
+```sh
+bun run db:seed
+```
+
+For development, you can also use:
+
+```sh
+bun run db:push  # Push schema directly without migrations
+```
+
+Open Drizzle Studio to view and edit data:
+
+```sh
+bun run db:studio
+```
+
+Run ClickHouse migrations:
+
+```sh
+bun run db:clickhouse:migrate
+```
+
+Check ClickHouse migration status:
+
+```sh
+bun run db:clickhouse:status
 ```
 
 ## Development
 
-Start the API server in development mode:
+Run the API server in development mode:
 
-```bash
-bun run dev:server
+```sh
+bun run dev
 ```
 
-Start the worker in development mode:
-
-```bash
-bun run dev:worker
-```
-
-Start both server and worker concurrently:
-
-```bash
-bun run dev:all
-```
-
-The API server will be available at http://localhost:3000
+The API will be available at http://localhost:3000
 
 ## Production
 
 Build the application:
 
-```bash
-bun run build:all
+```sh
+bun run build
 ```
 
-Start in production mode:
+Start the production server:
 
-```bash
-bun run start:all
+```sh
+bun run start
 ```
 
 ## Docker
 
-Start all services using Docker Compose:
+Build and run with Docker Compose:
 
-```bash
+```sh
 docker-compose up -d
 ```
 
-Stop all services:
+## Project Structure
 
-```bash
-docker-compose down
+```
+src/
+├── base.ts                # Base Elysia app with core plugins
+├── index.ts               # Entry point
+├── bull/                  # Background jobs
+│   ├── queue/             # Job queues
+│   └── worker/            # Job workers
+├── libs/                  # Shared libraries
+│   ├── cache/             # Cache utilities
+│   ├── config/            # Configuration
+│   ├── database/          # Database clients and repositories
+│   ├── errors/            # Custom error classes
+│   ├── guards/            # Authorization guards
+│   ├── mailer/            # Email service
+│   ├── plugins/           # Elysia plugins
+│   ├── repositories/      # Data access layer
+│   ├── types/             # TypeScript types
+│   └── utils/             # Utility functions
+└── modules/               # Feature modules
+    ├── auth/              # Authentication
+    ├── home/              # Root/health endpoints
+    ├── profile/           # User profile
+    └── settings/          # Application settings
 ```
 
-## Available Scripts
+## Code Quality
 
-### Server
+Run linting:
 
-- `bun run dev:server` - Start API server in development mode with hot reload
-- `bun run start:server` - Start API server in production mode
-- `bun run build:server` - Build API server for production
+```sh
+bun run lint
+```
 
-### Worker
+Fix linting issues:
 
-- `bun run dev:worker` - Start background worker in development mode
-- `bun run start:worker` - Start background worker in production mode
-- `bun run build:worker` - Build worker for production
+```sh
+bun run lint:fix
+```
 
-### Combined
+Format code:
 
-- `bun run dev:all` - Start both server and worker in development mode
-- `bun run start:all` - Start both server and worker in production mode
-- `bun run build:all` - Build both server and worker for production
+```sh
+bun run format
+```
+
+Type checking:
+
+```sh
+bun run typecheck
+```
+
+## API Documentation
+
+Once the server is running, access the interactive API documentation at:
+
+```
+http://localhost:3000/docs
+```
+
+The API documentation is powered by **OpenAPI** with **Scalar UI**, providing:
+
+- Browse all endpoints with request/response schemas
+- Try endpoints directly from the browser
+- View validation rules and examples
+- Bearer token authentication support
+
+Download the OpenAPI specification:
+
+```
+http://localhost:3000/docs/openapi.json
+```
+
+For more details, see the [API Documentation Guide](./docs/API_DOCUMENTATION.md).
+
+## Scripts
+
+### Development
+
+- `bun run dev` - Run API server with hot reload
+- `bun run build` - Build the application
+- `bun run start` - Start the production server
 
 ### Code Quality
 
 - `bun run lint` - Run ESLint
-- `bun run lint:fix` - Run ESLint with auto-fix
+- `bun run lint:fix` - Fix ESLint issues
 - `bun run format` - Format code with Prettier
+- `bun run typecheck` - Run TypeScript type checking
 
-### Database
+### Database (PostgreSQL/Drizzle)
 
-- `bun run db:postgres:seed` - Seed PostgreSQL database
+- `bun run db:generate` - Generate migration files from schema
+- `bun run db:migrate` - Apply pending migrations
+- `bun run db:push` - Push schema to database (development only)
+- `bun run db:pull` - Pull schema from database
+- `bun run db:studio` - Open Drizzle Studio
+- `bun run db:drop` - Drop all tables (dangerous!)
+- `bun run db:seed` - Seed database with initial data
 
-## API Documentation
+### Database (ClickHouse)
 
-Interactive API documentation is available at:
+- `bun run db:clickhouse:migrate` - Run ClickHouse migrations
+- `bun run db:clickhouse:status` - Check migration status
 
-- Development: http://localhost:3000/docs
-- Swagger UI with complete API specifications
+### Makefile Commands
+
+You can also use `make` commands:
+
+- `make help` - Show all available commands
+- `make dev` - Start development server
+- `make fresh` - Drop, push schema, and seed (development)
+- `make reset` - Generate migrations, migrate, and seed
+
+## Documentation
+
+Comprehensive documentation is available in the [docs/](./docs/) directory:
+
+- [API Documentation](./docs/API_DOCUMENTATION.md) - API consumer guide
+- [Configuration](./docs/CONFIGURATION.md) - Environment variables reference
+- [Error Handling](./docs/ERROR_HANDLING.md) - Error handling guide
+- [Plugins](./docs/PLUGINS.md) - Plugin system guide
+- [Security](./docs/SECURITY.md) - Security documentation
 
 ## Architecture
 
@@ -208,76 +273,22 @@ This project follows Clean Architecture principles:
 - **Error Handling** - Custom error classes with consistent API responses
 - **Validation** - TypeBox schemas for runtime validation
 
-### Background Jobs
+## Roadmap & Improvements
 
-BullMQ is used for handling asynchronous tasks:
+See [TODO.md](./TODO.md) for a comprehensive list of planned improvements and enhancements.
 
-- Email sending
-- Data processing
-- Scheduled tasks
-- Long-running operations
-
-Jobs are defined in `src/bull/queue/` and processed by workers in `src/bull/worker/`.
-
-### Caching Strategy
-
-Redis is used for:
-
-- Application-level caching
-- Session management
-- Queue backend for BullMQ
-- Rate limiting
-
-### Security Features
-
-- Helmet.js for security headers
-- Rate limiting
-- JWT authentication
-- CORS configuration
-- Input validation
-- Password hashing with bcrypt
-
-## Code Conventions
-
-- Use kebab-case for file names
-- Use absolute imports with path aliases (@libs, @modules, @base)
-- Minimal comments - only for complex logic
-- Repository functions return factory pattern
-- Services export objects, not classes
-- Structured logging with pino
-- TypeScript strict mode enabled
-
-## Testing
-
-Write tests focusing on behavior:
-
-```typescript
-describe("AuthService", () => {
-	it("should authenticate user with valid credentials", async () => {
-		const result = await AuthService.singIn("user@example.com", "password");
-		expect(result).toHaveProperty("id");
-		expect(result).toHaveProperty("accessToken");
-	});
-});
-```
-
-## Performance
-
-- Database connection pooling
-- Redis caching for expensive queries
-- Pagination for list endpoints
-- Background job processing for async operations
-- Bun's native performance optimizations
+Compare with clean-hono implementation: [COMPARISON.md](../COMPARISON.md)
 
 ## Contributing
 
-1. Follow the code conventions in `.github/copilot-instructions.md`
-2. Write clean, focused functions
-3. Add validation schemas for all inputs
-4. Handle errors explicitly
-5. Use structured logging
-6. Write tests for new features
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+Please read our Contributing Guidelines and Code of Conduct.
 
 ## License
 
-MIT
+This project is licensed under the MIT License.
