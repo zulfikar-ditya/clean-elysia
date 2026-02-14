@@ -34,50 +34,45 @@
 
 ### Project Structure
 
-- [ ] **Reorganize utilities structure**
-  - Current: `libs/utils/toolkit` and `libs/utils/elysia` mixed
-  - Rename: `toolkit` → `utils` (more standard naming)
-  - Better separation of concerns in utils directory
-  - Consolidate similar utilities
+- [x] **Reorganize utilities structure**
+  - Flattened: `toolkit/` files (date.ts, number.ts, string.ts) moved to `utils/` root
+  - Updated `utils/index.ts` to flat export style (matching clean-hono)
+  - Fixed imports referencing `toolkit/` path
 
 ### Type Safety
 
-- [ ] **Add TypeScript strict checks**
-  - Add `typecheck` script: `"typecheck": "tsc --noEmit"`
-  - Enable stricter TypeScript compiler options
-  - Add type checking to CI/CD pipeline
+- [x] **Add TypeScript strict checks**
+  - `typecheck` script already existed ✓
+  - Enabled: `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
 
 ### Code Quality
 
-- [ ] **Enhance ESLint configuration**
-  - Current config is basic
-  - Add `eslint-plugin-simple-import-sort` (already installed but not configured)
-  - Add import ordering rules
-  - Configure more strict linting rules
+- [x] **Enhance ESLint configuration**
+  - Already configured with `eslint-plugin-simple-import-sort` ✓
+  - Import sorting rules already present ✓
+  - Config already matches clean-hono pattern ✓
 
 ### OpenAPI Schema Enhancement
 
-- [ ] **Improve OpenAPI schema definitions**
-  - Add better examples in schemas
-  - Add more detailed descriptions
-  - Add request/response examples
-  - Improve error response schemas with validation examples
-  - Reference clean-hono's `commonResponse` pattern with validation errors
+- [x] **Improve OpenAPI schema definitions**
+  - Added descriptions and examples to all module schemas (auth, user, role, permission, home)
+  - `commonResponse` helper already implemented ✓
+  - Schemas now include `description` and `examples` for better API docs
 
 ### Middleware & Plugins
 
-- [ ] **Add missing middleware**
-  - Add performance monitoring middleware (like clean-hono's `performanceMiddleware`)
-  - Add request body size limits (clean-hono has `bodyLimit`)
-  - Consider adding request timeout middleware
+- [x] **Add missing middleware**
+  - Added `PerformancePlugin` - logs request duration, warns on slow requests (>1s)
+  - Added `BodyLimitPlugin` - restricts request payload to 100KB
+  - Registered both in `base.ts` middleware chain
 
 ### DI Pattern
 
-- [ ] **Implement Dependency Injection pattern**
-  - Current: Services are imported directly
-  - Consider: DI container pattern (like clean-hono's `container.ts`)
-  - Benefits: Better testability, loose coupling
-  - Would require refactoring service imports
+- [x] **Implement Dependency Injection pattern**
+  - Created `Container` class in `src/libs/plugins/core/container.ts`
+  - Created `bootstrap.ts` to register all services in DI container
+  - Created `DiPlugin` to inject container into Elysia context
+  - Updated `index.ts` to call bootstrap at startup
 
 ## 🟢 Low Priority
 

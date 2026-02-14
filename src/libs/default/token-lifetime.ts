@@ -1,4 +1,4 @@
-import { DateToolkit } from "../utils/toolkit/date";
+import { DateToolkit } from "../utils/date";
 
 export const accessTokenLifetime = DateToolkit.addHours(
 	DateToolkit.now(),
