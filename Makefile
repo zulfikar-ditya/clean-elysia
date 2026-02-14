@@ -1,30 +1,47 @@
-.PHONY: help lint lint-fix format seed db-generate db-migrate db-push db-pull db-studio db-drop dev build start
+.PHONY: help install dev build start lint lint-fix format typecheck db-generate db-migrate db-push db-pull db-studio db-drop db-seed db-clickhouse-migrate db-clickhouse-status fresh reset
 
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  Development:"
-	@echo "    dev             - Start development server with hot reload"
-	@echo "    build           - Build the application"
-	@echo "    start           - Start the production server"
-	@echo "    lint            - Run ESLint"
-	@echo "    lint-fix        - Fix linting issues automatically"
-	@echo "    format          - Format code with Prettier"
-	@echo "    seed            - Run database seeder"
 	@echo ""
-	@echo "  Database (Drizzle):"
-	@echo "    db-generate - Generate migration files"
-	@echo "    db-migrate  - Run pending migrations"
-	@echo "    db-push     - Push schema to database (dev only)"
-	@echo "    db-pull     - Pull schema from database"
-	@echo "    db-studio   - Open Drizzle Studio"
-	@echo "    db-drop     - Drop all tables (dangerous!)"
+	@echo "  Setup:"
+	@echo "    install             - Install dependencies"
+	@echo ""
+	@echo "  Development:"
+	@echo "    dev             	   - Run dev server with hot reload"
+	@echo ""
+	@echo "  Build:"
+	@echo "    build           	   - Build the application"
+	@echo ""
+	@echo "  Production:"
+	@echo "    start               - Start the production server"
+	@echo ""
+	@echo "  Code Quality:"
+	@echo "    lint                - Run ESLint"
+	@echo "    lint-fix            - Fix ESLint issues"
+	@echo "    format              - Format code with Prettier"
+	@echo "    typecheck           - Run TypeScript type checking"
+	@echo ""
+	@echo "  Database (PostgreSQL/Drizzle):"
+	@echo "    db-generate         - Generate migration files"
+	@echo "    db-migrate          - Run pending migrations"
+	@echo "    db-push             - Push schema to database (dev only)"
+	@echo "    db-pull             - Pull schema from database"
+	@echo "    db-studio           - Open Drizzle Studio"
+	@echo "    db-drop             - Drop all tables (dangerous!)"
+	@echo "    db-seed             - Seed database with initial data"
 	@echo ""
 	@echo "  Database (ClickHouse):"
-	@echo "    migrate-clickhouse - Run ClickHouse migrations"
-	@echo "    migrate-clickhouse-status - Check status of ClickHouse migrations"
+	@echo "    db-clickhouse-migrate - Run ClickHouse migrations"
+	@echo "    db-clickhouse-status  - Check ClickHouse migration status"
+	@echo ""
+	@echo "  Workflows:"
+	@echo "    fresh               - Drop, push schema, and seed (dev only)"
+	@echo "    reset               - Generate, migrate, and seed"
 
-# Development commands
+install:
+	bun install
+
 dev:
 	bun run dev
 
@@ -34,6 +51,7 @@ build:
 start:
 	bun run start
 
+# Code quality
 lint:
 	bun run lint
 
@@ -43,44 +61,41 @@ lint-fix:
 format:
 	bun run format
 
-db-seed:
-	bun run ./src/libs/database/postgres/seed/index.ts
+typecheck:
+	bun run typecheck
 
-migrate-clickhouse:
-	bun run migrate:clickhouse
-
-migrate-clickhouse-status:
-	bun run migrate:clickhouse:status
-
-# Database commands
+# Database (PostgreSQL/Drizzle)
 db-generate:
-	bunx drizzle-kit generate
+	bun run db:generate
 
 db-migrate:
-	bunx drizzle-kit migrate
+	bun run db:migrate
 
 db-push:
-	bunx drizzle-kit push
+	bun run db:push
 
 db-pull:
-	bunx drizzle-kit introspect
+	bun run db:pull
 
 db-studio:
-	bunx drizzle-kit studio
+	bun run db:studio
 
 db-drop:
-	bunx drizzle-kit drop
+	bun run db:drop
 
-deploy-prepare:
-	@echo "Preparing deployment..."
-	bun install
-	bunx drizzle-kit migrate
-	bun run build
-	@echo "Deployment package is ready!"
+db-seed:
+	bun run db:seed
 
-# Combined commands for common workflows
-fresh: db-drop db-push seed
+# Database (ClickHouse)
+db-clickhouse-migrate:
+	bun run db:clickhouse:migrate
+
+db-clickhouse-status:
+	bun run db:clickhouse:status
+
+# Combined workflows
+fresh: db-drop db-push db-seed
 	@echo "Database refreshed and seeded!"
 
-reset: db-generate db-migrate seed
+reset: db-generate db-migrate db-seed
 	@echo "Database migrated and seeded!"

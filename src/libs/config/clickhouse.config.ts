@@ -1,3 +1,5 @@
+import { env } from "./env.config";
+
 export interface IClickHouseConfig {
 	host: string;
 	user: string;
@@ -6,8 +8,8 @@ export interface IClickHouseConfig {
 }
 
 export const clickhouseConfig: IClickHouseConfig = {
-	host: process.env.CLICKHOUSE_HOST || "http://localhost:8123",
-	user: process.env.CLICKHOUSE_USER || "default",
-	password: process.env.CLICKHOUSE_PASSWORD || "",
-	database: process.env.CLICKHOUSE_DATABASE || "default",
+	host: env.CLICKHOUSE_HOST,
+	user: env.CLICKHOUSE_USER,
+	password: env.CLICKHOUSE_PASSWORD,
+	database: env.CLICKHOUSE_DATABASE,
 };

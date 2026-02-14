@@ -410,3 +410,99 @@ export const createPaginatedResponseSchema = <T extends TSchema>(
 	422: ValidationErrorResponseSchema,
 	500: CommonResponseSchemas[500],
 });
+
+// ============================================
+// COMMON RESPONSE HELPER (like clean-hono)
+// ============================================
+
+type CommonResponseOptions = {
+	exclude?: number[];
+	include?: number[];
+};
+
+/**
+ * Generate OpenAPI response schemas for common HTTP status codes.
+ * Similar to clean-hono's commonResponse() - provides a single call to define
+ * all expected response schemas for a route.
+ *
+ * @param dataSchema - TypeBox schema for the success response data
+ * @param options - Configuration options
+ * @param options.exclude - Status codes to exclude from the response
+ * @param options.include - Only include these status codes (overrides exclude)
+ *
+ * @example
+ * // Include all standard responses
+ * response: commonResponse(UserSchema)
+ *
+ * // Only specific status codes
+ * response: commonResponse(UserSchema, { include: [200, 400, 422] })
+ *
+ * // Exclude certain codes
+ * response: commonResponse(t.Null(), { exclude: [201, 403, 404] })
+ */
+export const commonResponse = <T extends TSchema>(
+	dataSchema: T,
+	options: CommonResponseOptions = {},
+) => {
+	const { exclude = [], include } = options;
+
+	const shouldInclude = (code: number) =>
+		!exclude.includes(code) && (!include || include.includes(code));
+
+	const result: Record<number, TSchema> = {};
+
+	// Success responses
+	if (shouldInclude(200)) result[200] = SuccessResponseSchema(dataSchema);
+	if (shouldInclude(201))
+		result[201] = t.Object({
+			status: t.Literal(201),
+			success: t.Literal(true),
+			message: t.String(),
+			data: dataSchema,
+		});
+
+	// Error responses
+	if (shouldInclude(400)) result[400] = CommonResponseSchemas[400];
+	if (shouldInclude(401)) result[401] = CommonResponseSchemas[401];
+	if (shouldInclude(403)) result[403] = CommonResponseSchemas[403];
+	if (shouldInclude(404)) result[404] = CommonResponseSchemas[404];
+	if (shouldInclude(409)) result[409] = CommonResponseSchemas[409];
+	if (shouldInclude(422)) result[422] = CommonResponseSchemas[422];
+	if (shouldInclude(429)) result[429] = CommonResponseSchemas[429];
+	if (shouldInclude(500)) result[500] = CommonResponseSchemas[500];
+	if (shouldInclude(503)) result[503] = CommonResponseSchemas[503];
+
+	return result;
+};
+
+/**
+ * Generate OpenAPI response schemas for paginated endpoints.
+ *
+ * @param itemSchema - TypeBox schema for individual items in the paginated list
+ * @param options - Configuration options (same as commonResponse)
+ *
+ * @example
+ * response: commonPaginatedResponse(UserListSchema)
+ * response: commonPaginatedResponse(UserListSchema, { exclude: [404] })
+ */
+export const commonPaginatedResponse = <T extends TSchema>(
+	itemSchema: T,
+	options: CommonResponseOptions = {},
+) => {
+	const { exclude = [], include } = options;
+
+	const shouldInclude = (code: number) =>
+		!exclude.includes(code) && (!include || include.includes(code));
+
+	const result: Record<number, TSchema> = {};
+
+	if (shouldInclude(200)) result[200] = PaginatedResponseSchema(itemSchema);
+	if (shouldInclude(400)) result[400] = CommonResponseSchemas[400];
+	if (shouldInclude(401)) result[401] = CommonResponseSchemas[401];
+	if (shouldInclude(403)) result[403] = CommonResponseSchemas[403];
+	if (shouldInclude(404)) result[404] = CommonResponseSchemas[404];
+	if (shouldInclude(422)) result[422] = CommonResponseSchemas[422];
+	if (shouldInclude(500)) result[500] = CommonResponseSchemas[500];
+
+	return result;
+};

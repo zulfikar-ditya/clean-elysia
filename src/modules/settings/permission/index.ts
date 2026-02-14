@@ -2,11 +2,10 @@ import { PermissionGuard } from "@guards";
 import { AuthPlugin } from "@plugins";
 import { DatatableQueryParams } from "@types";
 import {
-	CommonResponseSchemas,
+	commonPaginatedResponse,
+	commonResponse,
 	DatatableToolkit,
-	PaginatedResponseSchema,
 	ResponseToolkit,
-	SuccessResponseSchema,
 } from "@utils";
 import Elysia, { t } from "elysia";
 
@@ -47,13 +46,9 @@ export const PermissionModule = new Elysia({
 				description:
 					"Retrieve a paginated list of permissions with optional filtering. Requires 'permission list' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				200: PaginatedResponseSchema(PermissionListSchema),
-			},
+			response: commonPaginatedResponse(PermissionListSchema, {
+				include: [200, 400, 401, 403, 500],
+			}),
 		},
 	)
 	// Create permission
@@ -78,14 +73,9 @@ export const PermissionModule = new Elysia({
 				description:
 					"Create one or more permissions in a specific group. Requires 'permission create' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				422: CommonResponseSchemas[422],
-				201: CommonResponseSchemas[201],
-			},
+			response: commonResponse(t.Null(), {
+				include: [201, 400, 401, 403, 422, 500],
+			}),
 		},
 	)
 	// Get permission detail
@@ -111,15 +101,9 @@ export const PermissionModule = new Elysia({
 				description:
 					"Retrieve detailed information about a specific permission. Requires 'permission detail' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				422: CommonResponseSchemas[422],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(PermissionListSchema),
-			},
+			response: commonResponse(PermissionListSchema, {
+				include: [200, 400, 401, 403, 404, 422, 500],
+			}),
 		},
 	)
 	// Update permission
@@ -146,15 +130,9 @@ export const PermissionModule = new Elysia({
 				description:
 					"Update an existing permission's details. Requires 'permission edit' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				422: CommonResponseSchemas[422],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(t.Null()),
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 422, 500],
+			}),
 		},
 	)
 	// Delete permission
@@ -180,14 +158,8 @@ export const PermissionModule = new Elysia({
 				description:
 					"Permanently delete a permission. Requires 'permission delete' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				422: CommonResponseSchemas[422],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(t.Null()),
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 422, 500],
+			}),
 		},
 	);

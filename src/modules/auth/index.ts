@@ -1,11 +1,7 @@
 import { JWT_CONFIG } from "@config";
 import { jwt } from "@elysiajs/jwt";
 import { UserInformation } from "@types";
-import {
-	CommonResponseSchemas,
-	ResponseToolkit,
-	SuccessResponseSchema,
-} from "@utils";
+import { commonResponse, ResponseToolkit } from "@utils";
 import Elysia, { t } from "elysia";
 
 import { baseApp } from "../../base";
@@ -56,11 +52,9 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: LoginSchema,
-			response: {
-				200: SuccessResponseSchema(LoginResponseSchema),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(LoginResponseSchema, {
+				include: [200, 400, 422],
+			}),
 			detail: {
 				summary: "User login",
 				description: "Authenticate user with email and password",
@@ -88,11 +82,7 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: RegisterSchema,
-			response: {
-				201: SuccessResponseSchema(t.Null()),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(t.Null(), { include: [201, 400, 422] }),
 			detail: {
 				summary: "User registration",
 				description: "Register a new user account",
@@ -115,11 +105,7 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: ResendVerificationEmailSchema,
-			response: {
-				200: SuccessResponseSchema(t.Null()),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(t.Null(), { include: [200, 400, 422] }),
 			detail: {
 				summary: "Resend verification email",
 				description: "Request a new email verification link",
@@ -142,11 +128,7 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: VerifyEmailSchema,
-			response: {
-				200: SuccessResponseSchema(t.Null()),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(t.Null(), { include: [200, 400, 422] }),
 			detail: {
 				summary: "Verify email address",
 				description: "Verify user's email address with token",
@@ -169,11 +151,7 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: ForgotPasswordSchema,
-			response: {
-				200: SuccessResponseSchema(t.Null()),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(t.Null(), { include: [200, 400, 422] }),
 			detail: {
 				summary: "Request password reset",
 				description: "Send password reset email to user",
@@ -196,11 +174,7 @@ export const AuthModule = new Elysia({
 		},
 		{
 			body: ResetPasswordSchema,
-			response: {
-				200: SuccessResponseSchema(t.Null()),
-				400: CommonResponseSchemas[400],
-				422: CommonResponseSchemas[422],
-			},
+			response: commonResponse(t.Null(), { include: [200, 400, 422] }),
 			detail: {
 				summary: "Reset password",
 				description: "Reset user password with token",

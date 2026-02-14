@@ -2,11 +2,10 @@ import { PermissionGuard } from "@guards";
 import { AuthPlugin } from "@plugins";
 import { DatatableQueryParams } from "@types";
 import {
-	CommonResponseSchemas,
+	commonPaginatedResponse,
+	commonResponse,
 	DatatableToolkit,
-	PaginatedResponseSchema,
 	ResponseToolkit,
-	SuccessResponseSchema,
 } from "@utils";
 import Elysia, { t } from "elysia";
 
@@ -43,13 +42,9 @@ export const RoleModule = new Elysia({
 				description:
 					"Retrieve a list of all roles. Requires 'role list' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				200: PaginatedResponseSchema(RoleListSchema),
-			},
+			response: commonPaginatedResponse(RoleListSchema, {
+				include: [200, 400, 401, 403, 500],
+			}),
 		},
 	)
 	.post(
@@ -68,13 +63,9 @@ export const RoleModule = new Elysia({
 				description:
 					"Create a new role with the provided details. Requires 'role create' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				500: CommonResponseSchemas[500],
-				201: SuccessResponseSchema(t.Null()),
-			},
+			response: commonResponse(t.Null(), {
+				include: [201, 400, 401, 403, 500],
+			}),
 		},
 	)
 	.get(
@@ -96,14 +87,9 @@ export const RoleModule = new Elysia({
 				description:
 					"Retrieve detailed information about a specific role. Requires 'role detail' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(RoleListSchema),
-			},
+			response: commonResponse(RoleListSchema, {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.patch(
@@ -122,14 +108,9 @@ export const RoleModule = new Elysia({
 				description:
 					"Update the details of an existing role. Requires 'role update' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(t.Null()),
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	)
 	.delete(
@@ -147,13 +128,8 @@ export const RoleModule = new Elysia({
 				description:
 					"Delete an existing role by its ID. Requires 'role delete' permission.",
 			},
-			response: {
-				400: CommonResponseSchemas[400],
-				401: CommonResponseSchemas[401],
-				403: CommonResponseSchemas[403],
-				404: CommonResponseSchemas[404],
-				500: CommonResponseSchemas[500],
-				200: SuccessResponseSchema(t.Null()),
-			},
+			response: commonResponse(t.Null(), {
+				include: [200, 400, 401, 403, 404, 500],
+			}),
 		},
 	);

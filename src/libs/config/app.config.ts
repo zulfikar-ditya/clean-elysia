@@ -1,3 +1,5 @@
+import { env } from "./env.config";
+
 interface IAppConfig {
 	APP_NAME: string;
 	APP_PORT: number;
@@ -15,18 +17,15 @@ interface IAppConfig {
 }
 
 export const AppConfig: IAppConfig = {
-	APP_NAME: process.env.APP_NAME || "Elysia App",
-	APP_PORT: Number(process.env.APP_PORT) || 3000,
-	APP_URL: process.env.APP_URL || "http://localhost:3000",
-	APP_ENV: (process.env.NODE_ENV || "development") as
-		| "development"
-		| "staging"
-		| "production",
-	APP_TIMEZONE: process.env.APP_TIMEZONE || "UTC",
-	APP_KEY: process.env.APP_KEY || "your-app-key",
-	APP_JWT_SECRET: process.env.APP_JWT_SECRET || "jwt-secret",
+	APP_NAME: env.APP_NAME,
+	APP_PORT: env.APP_PORT,
+	APP_URL: env.APP_URL,
+	APP_ENV: env.NODE_ENV,
+	APP_TIMEZONE: env.APP_TIMEZONE,
+	APP_KEY: env.APP_KEY,
+	APP_JWT_SECRET: env.APP_JWT_SECRET,
 
-	LOG_LEVEL: (process.env.LOG_LEVEL || "info") as "info" | "warn" | "debug",
+	LOG_LEVEL: env.LOG_LEVEL,
 
-	CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000",
+	CLIENT_URL: env.CLIENT_URL,
 };
