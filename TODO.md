@@ -5,7 +5,7 @@
 ### API Documentation
 
 - [x] **Upgrade to Scalar API Documentation** (like clean-hono)
-  - Configured `@elysiajs/openapi` with `provider: "scalar"`, mars theme, modern layout
+  - Configured `@elysiajs/openapi` with `provider: "scalar"`.
   - Scalar UI served at `/docs` with better UX
 
 ### Script Consistency

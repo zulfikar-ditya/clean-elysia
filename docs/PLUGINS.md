@@ -40,7 +40,6 @@ export const DocsPlugin = new Elysia({ name: "docs" }).use(
 	openapi({
 		path: "/docs",
 		provider: "scalar",
-		scalar: { theme: "mars", layout: "modern" },
 		documentation: {
 			info: { title: "API", version: "1.0.0" },
 			security: [{ bearerAuth: [] }],

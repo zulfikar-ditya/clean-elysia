@@ -7,10 +7,6 @@ export const DocsPlugin = new Elysia({ name: "docs" }).use(
 		path: "/docs",
 		enabled: AppConfig.APP_ENV !== "production",
 		provider: "scalar",
-		scalar: {
-			theme: "mars",
-			layout: "modern",
-		},
 		documentation: {
 			info: {
 				title: `API ${AppConfig.APP_NAME}`,
