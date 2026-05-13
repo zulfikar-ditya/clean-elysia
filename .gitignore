@@ -43,3 +43,7 @@ package-lock.json
 **/*.bun
 
 /dist
+
+opencode.json
+
+skills-lock.json
