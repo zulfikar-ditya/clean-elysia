@@ -32,6 +32,20 @@ Core application settings.
 | `LOG_LEVEL`      | `string` | `"info"`        | Logging level (info, warn, debug, error)       |
 | `CLIENT_URL`     | `string` | Required        | Frontend/client application URL                |
 
+#### Cluster Mode
+
+When `APP_CLUSTER_MODE=true`, the entry process (`src/index.ts`) acts as a Node `cluster` primary and forks worker processes. Each worker boots the full app from `src/server.ts` and listens on `APP_PORT`. Elysia on Bun enables `SO_REUSEPORT` automatically (Linux only), so the kernel distributes incoming connections across workers. Crashed workers are auto-respawned; `SIGINT`/`SIGTERM` to the primary terminates all workers.
+
+| Variable              | Type     | Default | Description                                                                |
+| --------------------- | -------- | ------- | -------------------------------------------------------------------------- |
+| `APP_CLUSTER_MODE`    | `bool`   | `false` | Enable multi-process cluster mode                                          |
+| `APP_CLUSTER_WORKERS` | `number` | `0`     | Number of workers to fork. `0` (or unset) uses `os.availableParallelism()` |
+
+Notes:
+
+- BullMQ workers boot inside every cluster worker — Redis handles job locking so jobs are not double-processed; queue throughput scales with the cluster.
+- Keep `APP_CLUSTER_MODE=false` for `bun run dev` — `--hot --watch` doesn't play well with forked workers.
+
 **Example `.env`**:
 
 ```bash

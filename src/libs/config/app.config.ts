@@ -12,6 +12,10 @@ interface IAppConfig {
 	// log
 	LOG_LEVEL: "info" | "warn" | "debug";
 
+	// cluster
+	APP_CLUSTER_MODE: boolean;
+	APP_CLUSTER_WORKERS: number;
+
 	// client
 	CLIENT_URL: string;
 }
@@ -26,6 +30,9 @@ export const AppConfig: IAppConfig = {
 	APP_JWT_SECRET: env.APP_JWT_SECRET,
 
 	LOG_LEVEL: env.LOG_LEVEL,
+
+	APP_CLUSTER_MODE: env.APP_CLUSTER_MODE,
+	APP_CLUSTER_WORKERS: env.APP_CLUSTER_WORKERS,
 
 	CLIENT_URL: env.CLIENT_URL,
 };

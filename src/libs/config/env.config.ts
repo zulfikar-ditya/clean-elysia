@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { cleanEnv, host, num, port, str, url } from "envalid";
+import { bool, cleanEnv, host, num, port, str, url } from "envalid";
 
 /**
  * Validates and parses all required environment variables at startup.
@@ -22,6 +22,10 @@ export const env = cleanEnv(process.env, {
 		choices: ["info", "warn", "debug"] as const,
 		default: "info",
 	}),
+
+	// Cluster
+	APP_CLUSTER_MODE: bool({ default: false }),
+	APP_CLUSTER_WORKERS: num({ default: 0 }),
 
 	// Client
 	CLIENT_URL: url({ default: "http://localhost:3000" }),
