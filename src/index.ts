@@ -1,6 +1,6 @@
 import { AppConfig } from "@config";
 import { bootstraps } from "@modules";
-import { DocsPlugin, ErrorHandlerPlugin } from "@plugins";
+import { DocsPlugin, ErrorHandlerPlugin, LocalePlugin } from "@plugins";
 import { Elysia } from "elysia";
 
 import { bootstrap } from "./bootstrap";
@@ -9,6 +9,7 @@ import { bootstrap } from "./bootstrap";
 bootstrap();
 
 const app = new Elysia()
+	.use(LocalePlugin)
 	.use(DocsPlugin)
 	.use(ErrorHandlerPlugin)
 	.use(bootstraps)

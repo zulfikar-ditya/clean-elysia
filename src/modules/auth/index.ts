@@ -1,5 +1,6 @@
 import { JWT_CONFIG } from "@config";
 import { jwt } from "@elysiajs/jwt";
+import { t as trans } from "@i18n";
 import { UserInformation } from "@types";
 import { commonResponse, ResponseToolkit } from "@utils";
 import Elysia, { t } from "elysia";
@@ -47,7 +48,7 @@ export const AuthModule = new Elysia({
 					user,
 					accessToken: token,
 				},
-				"Successfully logged in",
+				trans("auth.loginSuccess"),
 			);
 		},
 		{
@@ -75,10 +76,7 @@ export const AuthModule = new Elysia({
 			});
 
 			set.status = 201;
-			return ResponseToolkit.created(
-				null,
-				"Successfully registered. Please check your email to verify your account.",
-			);
+			return ResponseToolkit.created(null, trans("auth.registerSuccess"));
 		},
 		{
 			body: RegisterSchema,
@@ -100,7 +98,7 @@ export const AuthModule = new Elysia({
 
 			return ResponseToolkit.success(
 				null,
-				"If the email exists, a verification link has been sent. Please check your inbox.",
+				trans("auth.resendVerificationSent"),
 			);
 		},
 		{
@@ -121,10 +119,7 @@ export const AuthModule = new Elysia({
 		async ({ body }) => {
 			await AuthService.verifyEmail(body.token);
 
-			return ResponseToolkit.success(
-				null,
-				"Email verified successfully. You can now log in.",
-			);
+			return ResponseToolkit.success(null, trans("auth.emailVerified"));
 		},
 		{
 			body: VerifyEmailSchema,
@@ -144,10 +139,7 @@ export const AuthModule = new Elysia({
 		async ({ body }) => {
 			await AuthService.forgotPassword(body.email);
 
-			return ResponseToolkit.success(
-				null,
-				"If the email exists, a password reset link has been sent. Please check your inbox.",
-			);
+			return ResponseToolkit.success(null, trans("auth.forgotPasswordSent"));
 		},
 		{
 			body: ForgotPasswordSchema,
@@ -167,10 +159,7 @@ export const AuthModule = new Elysia({
 		async ({ body }) => {
 			await AuthService.resetPassword(body.token, body.newPassword);
 
-			return ResponseToolkit.success(
-				null,
-				"Password has been reset successfully. You can now log in with your new password.",
-			);
+			return ResponseToolkit.success(null, trans("auth.passwordReset"));
 		},
 		{
 			body: ResetPasswordSchema,

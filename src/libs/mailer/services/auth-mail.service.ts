@@ -2,6 +2,7 @@ import { sendEmailQueue } from "@bull";
 import { AppConfig } from "@config";
 import { db, DbTransaction, emailVerifications } from "@database";
 import { verificationTokenLifetime } from "@default";
+import { getCurrentLocale, t } from "@i18n";
 import { ForgotPasswordRepository, UserRepository } from "@repositories";
 import { log, StrToolkit } from "@utils";
 
@@ -9,6 +10,7 @@ export class AuthMailService {
 	async sendVerificationEmail(userId: string, tx?: DbTransaction) {
 		const user = await UserRepository().getDetail(userId);
 		const token = StrToolkit.random(100);
+		const lang = getCurrentLocale();
 
 		const dbInstance = tx ? tx : db;
 		await dbInstance.insert(emailVerifications).values({
@@ -19,9 +21,10 @@ export class AuthMailService {
 
 		// Queue email instead of blocking
 		await sendEmailQueue.add("send-email", {
-			subject: "Email verification",
+			subject: t("mail.subject.verification"),
 			to: user.email,
 			template: "auth/email-verification",
+			lang,
 			variables: {
 				user_id: user.id,
 				user_name: user.name,
@@ -39,6 +42,8 @@ export class AuthMailService {
 	async sendResetPasswordEmail(userId: string) {
 		const user = await UserRepository().getDetail(userId);
 		const token = StrToolkit.random(255);
+		const lang = getCurrentLocale();
+
 		await ForgotPasswordRepository().create({
 			user_id: user.id,
 			token,
@@ -46,9 +51,10 @@ export class AuthMailService {
 
 		// Queue email instead of blocking
 		await sendEmailQueue.add("send-email", {
-			subject: "Reset Password",
+			subject: t("mail.subject.resetPassword"),
 			to: user.email,
 			template: "auth/forgot-password",
+			lang,
 			variables: {
 				user_id: user.id,
 				user_name: user.name,

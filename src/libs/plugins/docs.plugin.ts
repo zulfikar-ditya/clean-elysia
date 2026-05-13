@@ -1,5 +1,5 @@
 import { AppConfig } from "@config";
-import openapi from "@elysiajs/openapi";
+import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 
 export const DocsPlugin = new Elysia({ name: "docs" }).use(
@@ -25,6 +25,19 @@ export const DocsPlugin = new Elysia({ name: "docs" }).use(
 						type: "http",
 						scheme: "bearer",
 						bearerFormat: "JWT",
+					},
+				},
+				parameters: {
+					AcceptLanguage: {
+						name: "Accept-Language",
+						in: "header",
+						description: "Preferred language for the response",
+						required: false,
+						schema: {
+							type: "string",
+							enum: ["en", "id"],
+							default: "en",
+						},
 					},
 				},
 			},

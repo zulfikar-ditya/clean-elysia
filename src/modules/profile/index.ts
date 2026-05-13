@@ -1,3 +1,4 @@
+import { t as trans } from "@i18n";
 import { AuthPlugin } from "@plugins";
 import { UserInformationTypeBox } from "@types";
 import { commonResponse, ResponseToolkit } from "@utils";
@@ -16,7 +17,7 @@ export const ProfileModule = new Elysia({
 	.get(
 		"",
 		({ user }) => {
-			return ResponseToolkit.success(user, "Profile retrieved successfully");
+			return ResponseToolkit.success(user, trans("profile.retrieved"));
 		},
 		{
 			response: commonResponse(UserInformationTypeBox, { include: [200, 401] }),
@@ -39,10 +40,7 @@ export const ProfileModule = new Elysia({
 				email: body.email,
 			});
 
-			return ResponseToolkit.success(
-				updatedProfile,
-				"Profile updated successfully",
-			);
+			return ResponseToolkit.success(updatedProfile, trans("profile.updated"));
 		},
 		{
 			body: t.Object({
