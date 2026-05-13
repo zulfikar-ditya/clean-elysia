@@ -1,5 +1,6 @@
 import { db, emailVerifications, users } from "@database";
 import { BadRequestError } from "@errors";
+import { t } from "@i18n";
 import { AuthMailService } from "@mailer";
 import { ForgotPasswordRepository, UserRepository } from "@repositories";
 import { UserInformation } from "@types";
@@ -10,28 +11,28 @@ export const AuthService = {
 	singIn: async (email: string, password: string): Promise<UserInformation> => {
 		const user = await UserRepository().findByEmail(email);
 		if (!user) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "email",
-					message: "Invalid email or password",
+					message: t("auth.invalidCredentials"),
 				},
 			]);
 		}
 
 		if (user.email_verified_at === null) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "email",
-					message: "Email not verified. Please check your inbox.",
+					message: t("auth.emailNotVerified"),
 				},
 			]);
 		}
 
 		if (user.status !== "active") {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "email",
-					message: "Your account is inactive. Please contact support.",
+					message: t("auth.accountInactive"),
 				},
 			]);
 		}
@@ -39,10 +40,10 @@ export const AuthService = {
 		const isPasswordValid = await Hash.compareHash(password, user.password);
 
 		if (!isPasswordValid) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "email",
-					message: "Invalid email or password",
+					message: t("auth.invalidCredentials"),
 				},
 			]);
 		}
@@ -63,10 +64,10 @@ export const AuthService = {
 	}): Promise<void> => {
 		const existingUser = await UserRepository().findByEmail(data.email);
 		if (existingUser) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "email",
-					message: "Email is already registered",
+					message: t("auth.emailAlreadyRegistered"),
 				},
 			]);
 		}
@@ -119,10 +120,10 @@ export const AuthService = {
 			)[0] ?? null;
 
 		if (!record || record.expired_at < new Date()) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "token",
-					message: "Invalid or expired verification token",
+					message: t("auth.invalidVerificationToken"),
 				},
 			]);
 		}
@@ -158,10 +159,10 @@ export const AuthService = {
 		const passwordReset = await ForgotPasswordRepository().findByToken(token);
 
 		if (!passwordReset) {
-			throw new BadRequestError("Validation error", [
+			throw new BadRequestError(t("auth.validationError"), [
 				{
 					field: "token",
-					message: "Invalid or expired password reset token",
+					message: t("auth.invalidResetToken"),
 				},
 			]);
 		}
