@@ -79,9 +79,9 @@ jobs:
 
       - name: Check Drizzle migrations are up to date
         run: |
-          npx drizzle-kit generate
+          bun run db:generate
           if [ -n "$(git status --porcelain src/libs/database/postgres/migrations)" ]; then
-            echo "Error: Drizzle migrations are not up to date. Please run 'npx drizzle-kit generate' and commit the changes."
+            echo "Error: Drizzle migrations are not up to date. Please run 'bun run db:generate' and commit the changes."
             git status src/libs/database/postgres/migrations
             exit 1
           fi
