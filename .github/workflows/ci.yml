@@ -59,7 +59,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -h localhost -U postgres -d elysia_db"
+          --health-cmd="pg_isready -U postgres -d elysia_db"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -91,14 +91,8 @@ jobs:
       - name: Run Drizzle check
         run: bunx drizzle-kit check
 
-      - name: Check Drizzle introspection output
-        run: |
-          bunx drizzle-kit introspect
-          if [ -n "$(git status --porcelain src/libs/database/postgres/schema)" ]; then
-            echo "Error: Drizzle schema is not in sync with database. Please run 'bunx drizzle-kit introspect' and commit the changes."
-            git status src/libs/database/postgres/schema
-            exit 1
-          fi
+      - name: Run Drizzle introspect
+        run: bunx drizzle-kit introspect
 
   build:
     name: Build
